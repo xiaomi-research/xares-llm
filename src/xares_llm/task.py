@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import torch
 from pathlib import Path
-import numpy as np
 from transformers import AutoTokenizer, TrainingArguments
 import yaml
 from dataclasses import dataclass, field
@@ -86,8 +85,6 @@ class XaresLLMTrainConfig:
             self.valid_data = [
                 AudioTextDataType(name=k, **val) for k, val in self.valid_data.items()
             ]
-        # if isinstance(self.test_data, dict):
-        #     self.test_data = [AudioTextDataType(name=k, **val) for k, val in self.test_data.items()]
 
         setup_global_logger()
         if self.batch_size_valid is None:
@@ -111,6 +108,7 @@ class XaresLLMEvaluationConfig:
     metric: RegisteredMetricsLiteral
     batch_size: int = 1
     num_workers: int = 0
+    weight: float = 1
 
     @classmethod
     def configs_from_file(cls, yaml_config_file: str) -> List[XaresLLMEvaluationConfig]:
@@ -139,15 +137,6 @@ class XaresLLMTask:
         self.train_config = train_config
         self.tokenizer = AutoTokenizer.from_pretrained(train_config.decoder_model_name)
 
-    def download_audio_tar(self):
-        pass
-        # audio_ready_path = self.config.env_dir / self.config.xares_settings.audio_ready_filename
-        # if not self.config.force_download and audio_ready_path.exists():
-        #     logger.warning(f"Skip downloading audio tar: {audio_ready_path} exists.")
-        #     return
-        #
-        # download_zenodo_record(self.config.zenodo_id, self.env_dir, force_download=self.config.force_download)
-
     def run_mlp(self, eval_configs: List[XaresLLMEvaluationConfig]) -> List[Dict[str, Any]]:
         if not isinstance(eval_configs, list):
             eval_configs = [eval_configs]
@@ -159,7 +148,7 @@ class XaresLLMTask:
             score = self.evaluate_mlp(trained_model=model, eval_config=eval_config)
 
             logger.info(f"{dataset_name}: [{eval_config.metric}]: {score:.2f}")
-            result.append({"dataset": dataset_name, "score": score})
+            result.append({"Task": dataset_name, "score": score, 'weight':eval_config.weight})
         return result
 
     def train_mlp(self) -> XaresLLMModel:

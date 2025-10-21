@@ -1,5 +1,9 @@
 from typing import Any, Callable, Dict, Iterable, List, Tuple
 import webdataset as wds
+from webdataset.tariterators import tar_file_expander
+from webdataset.filters import pipelinefilter
+from urllib.parse import urlparse
+
 from functools import partial
 import tempfile
 import os
@@ -249,135 +253,154 @@ def _pad(
         out_tensor[i, ..., :length] = tensor[..., :length]
     return out_tensor, length_to_mask(torch.as_tensor(lengths), max_length=to_pad_to_length)
 
+def _process_sample_stream(stream: Iterable[Dict[str, Any]],
+                           tokenizer: Callable, 
+                           min_audio_length: float | None = None,
+                           drop_clipped: bool = True,
+                           normalize_clipped: bool = True,
+                           crop_audio_length: float | None = None,
+                           max_text_token_length: int | None = None,
+                           text_data_key: str | None = None,
+                           target_sample_rate: int = 16000,
+                           mono: bool = True,
+                           prompt: str | List[str] | Dict[str, Any] = "",
+                           handler: Callable = warn_and_continue,
+                           tokenizer_eos_token: bool = False
+                           ) -> Iterable[Dict[str, Any]]:
+    for data_sample in stream:
+        # Note: We use the local variables from the outer scope directly.
+        try:
+            # 1. Pop and Extract Data
+            audio = data_sample.pop("audio")
+            tarname = data_sample.pop("tar")
+            filename = data_sample.pop("filename")
+            texts = text_from_json(data_sample.pop("text"), data_key=text_data_key)
+            # Texts = List[str], Can be multiple for Captioning data
+            if audio_filter_reason := filter_audio(
+                audio, min_audio_length=min_audio_length, drop_clipped=drop_clipped
+            ):
+                logger.warning(
+                    f"Dropped sample {data_sample.get('filename', 'unknown')} in {tarname} Reason: {audio_filter_reason}"
+                )
+                continue
+            # Audio reprocessing
+            audio, _ = preprocess_audio(
+                audio,
+                mono=mono,
+                normalize_clipped=normalize_clipped,
+                crop_audio_length=crop_audio_length,
+                target_sample_rate=target_sample_rate,
+            )
+            for text in texts:
+                # Filtering Text, Here only for corrupt samples, since length is for tokens
+                if text_filter_reason := filter_text_corrupt_length(
+                    text,
+                ):
+                    logger.warning(
+                        f"Dropped sample {data_sample.get('filename', 'unknown')} in {tarname} Reason: {text_filter_reason}"
+                    )
+                    continue
+
+                sample_prompt = prompt
+                if prompt == "" and "prompt" in data_sample:
+                    sample_prompt = data_sample.pop("prompt")
+                if (
+                    isinstance(sample_prompt, list)
+                    and len(sample_prompt) > 0
+                    and isinstance(sample_prompt[0], str)
+                ):
+                    sample_prompt = random.choice(sample_prompt)
+                prompt_inputs = tokenizer(sample_prompt)
+
+                if tokenizer_eos_token:
+                    text = text + tokenizer_eos_token
+                # 4. Text Tokenization and Filtering By tokens
+                text_inputs = tokenizer(text)  # Textinputs is a List[int]
+                if (
+                    exists(max_text_token_length)
+                    and len(text_inputs["input_ids"]) > max_text_token_length
+                ):
+                    logger.warning(
+                        f"Dropped sample {data_sample.get('filename', 'unknown')} in {tarname} (max token text length)"
+                    )
+                    continue
+
+                if tokenizer_eos_token:
+                    labels = [
+                        -100 if token_id == tokenizer.eos_token_id else token_id
+                        for token_id in text_inputs["input_ids"]
+                    ]
+                else:
+                    labels = text_inputs["input_ids"]
+
+                # promp_inputs is List[int]
+                prompt_targets = [-100 for _ in prompt_inputs["input_ids"]]
+                labels = prompt_targets + labels
+                input_ids = prompt_inputs["input_ids"] + text_inputs["input_ids"]
+                attention_mask = prompt_inputs["attention_mask"] + text_inputs["attention_mask"]
+
+                assert len(labels) == len(input_ids) == len(attention_mask)
+
+                yield {
+                    "audio": audio,
+                    "input_ids": input_ids,
+                    "attention_mask": attention_mask,
+                    "labels": labels,
+                    "text": text,
+                    "filename": filename,
+                }
+        except Exception as exn:
+            if handler(exn):
+                continue
+            else:
+                break
+
+def url_to_name(url):
+    parsed = urlparse(url)
+    p = Path(parsed.path)
+    filename = "_".join(p.parts[-3:])
+    return filename
 
 def create_audio_text_token_pipeline(
     urls: str | List[str],
     tokenizer: Callable,
-    prompt: str | List[str] | Dict[str, Any] = "",
+    cache_dir: str = "xaresllm_data",
     training: bool = False,
-    target_sample_rate: int = 16000,
-    mono: bool = True,
     batch_size: int = 1,
-    min_audio_length: float | None = None,
-    drop_clipped: bool = True,
-    normalize_clipped: bool = True,
-    crop_audio_length: float | None = None,
-    max_text_token_length: int | None = None,
-    text_data_key: str | None = None,
     resample: bool = False,
     handler: Callable = warn_and_continue,
+    **filtering_kwargs,
+    # Kwargs passed to _process_sample_stream for filtering and cropping
+    # mono: bool = True,
+    # prompt: str | List[str] | Dict[str, Any] = "",
+    # target_sample_rate: int = 16000,
+    # min_audio_length: float | None = None,
+    # drop_clipped: bool = True,
+    # normalize_clipped: bool = True,
+    # crop_audio_length: float | None = None,
+    # max_text_token_length: int | None = None,
+    # text_data_key: str | None = None,
 ) -> wds.DataPipeline:
-    tokenizer_eos_token = tokenizer.eos_token if hasattr(tokenizer, "eos_token") else None
 
-    def process_sample_stream(stream: Iterable[Dict[str, Any]]) -> Iterable[Dict[str, Any]]:
-        """
-        The custom logic for preprocessing and filtering samples, implemented as
-        a nested function to naturally capture arguments from the outer scope.
-        """
-        for data_sample in stream:
-            # Note: We use the local variables from the outer scope directly.
-            try:
-                # 1. Pop and Extract Data
-                audio = data_sample.pop("audio")
-                tarname = data_sample.pop("tar")
-                filename = data_sample.pop("filename")
-                texts = text_from_json(data_sample.pop("text"), data_key=text_data_key)
-                # Texts = List[str], Can be multiple for Captioning data
-                if audio_filter_reason := filter_audio(
-                    audio, min_audio_length=min_audio_length, drop_clipped=drop_clipped
-                ):
-                    logger.warning(
-                        f"Dropped sample {data_sample.get('filename', 'unknown')} in {tarname} Reason: {audio_filter_reason}"
-                    )
-                    continue
-                # Audio reprocessing
-                audio, _ = preprocess_audio(
-                    audio,
-                    mono=mono,
-                    normalize_clipped=normalize_clipped,
-                    crop_audio_length=crop_audio_length,
-                    target_sample_rate=target_sample_rate,
-                )
-                for text in texts:
-                    # Filtering Text, Here only for corrupt samples, since length is for tokens
-                    if text_filter_reason := filter_text_corrupt_length(
-                        text,
-                    ):
-                        logger.warning(
-                            f"Dropped sample {data_sample.get('filename', 'unknown')} in {tarname} Reason: {text_filter_reason}"
-                        )
-                        continue
-
-                    sample_prompt = prompt
-                    if prompt == "" and "prompt" in data_sample:
-                        sample_prompt = data_sample.pop("prompt")
-                    if (
-                        isinstance(sample_prompt, list)
-                        and len(sample_prompt) > 0
-                        and isinstance(sample_prompt[0], str)
-                    ):
-                        sample_prompt = random.choice(sample_prompt)
-                    prompt_inputs = tokenizer(sample_prompt)
-
-                    if tokenizer_eos_token:
-                        text = text + tokenizer_eos_token
-                    # 4. Text Tokenization and Filtering By tokens
-                    text_inputs = tokenizer(text)  # Textinputs is a List[int]
-                    if (
-                        exists(max_text_token_length)
-                        and len(text_inputs["input_ids"]) > max_text_token_length
-                    ):
-                        logger.warning(
-                            f"Dropped sample {data_sample.get('filename', 'unknown')} in {tarname} (max token text length)"
-                        )
-                        continue
-
-                    if tokenizer_eos_token:
-                        labels = [
-                            -100 if token_id == tokenizer.eos_token_id else token_id
-                            for token_id in text_inputs["input_ids"]
-                        ]
-                    else:
-                        labels = text_inputs["input_ids"]
-
-                    # promp_inputs is List[int]
-                    prompt_targets = [-100 for _ in prompt_inputs["input_ids"]]
-                    labels = prompt_targets + labels
-                    input_ids = prompt_inputs["input_ids"] + text_inputs["input_ids"]
-                    attention_mask = prompt_inputs["attention_mask"] + text_inputs["attention_mask"]
-
-                    assert len(labels) == len(input_ids) == len(attention_mask)
-
-                    yield {
-                        "audio": audio,
-                        "input_ids": input_ids,
-                        "attention_mask": attention_mask,
-                        "labels": labels,
-                        "text": text,
-                        "filename": filename,
-                    }
-            except Exception as exn:
-                if handler(exn):
-                    continue
-                else:
-                    break
-
+    pipeline: List = []
     logger.info(f"Pipeline start: Training={training}, Resampling={resample}, Batch={batch_size}")
-    if training:
-        pipeline: List = wds.WebDataset(
-            urls,
-            handler=handler,
-            resampled=resample,
-            cache_dir=CACHE_DIR,
-            cache_size=-1,
-            detshuffle=100,
-            nodesplitter=wds.split_by_node,
-            workersplitter=wds.split_by_worker,
-        ).pipeline
+    if resample:
+        pipeline.append(wds.ResampledShards(urls))
     else:
-        pipeline: List = wds.WebDataset(
-            urls, handler=handler, cache_dir=CACHE_DIR, cache_size=-1
-        ).pipeline
+        pipeline.append(wds.SimpleShardList(urls))
+    if training:
+        pipeline.extend(
+                [wds.detshuffle(), wds.split_by_node, wds.split_by_worker, 
+                 wds.cache.FileCache(cache_dir=cache_dir, url_to_name=url_to_name),
+                 pipelinefilter(tar_file_expander)(handler=handler)]
+                )
+    else:
+        # Ensure data is distributed even if there's only one shard
+        pipeline.extend([wds.split_by_worker, 
+                         wds.cache.FileCache(cache_dir=cache_dir, url_to_name=url_to_name),
+                         pipelinefilter(tar_file_expander)(handler=handler),
+                         wds.split_by_node,
+                         ])
 
     pipeline.extend(
         [
@@ -391,7 +414,8 @@ def create_audio_text_token_pipeline(
             ),
         ]
     )
-    pipeline.append(process_sample_stream)
+    tokenizer_eos_token = tokenizer.eos_token if hasattr(tokenizer, "eos_token") else None
+    pipeline.append(partial(_process_sample_stream, tokenizer=tokenizer, tokenizer_eos_token=tokenizer_eos_token, **filtering_kwargs ))
     # Batching
     pipeline.append(
         wds.batched(
@@ -550,16 +574,20 @@ def expand_path(pattern: str | List[str]) -> List[str]:
         return []
     all_final_matches: List[str] = []
     for pattern in pattern_list:
-        intermediate_patterns: List[str] = list(braceexpand.braceexpand(pattern))
-        has_glob_chars = any(c in pattern for c in "*?[]")
+        scheme = urlparse(pattern)
+        if scheme != '': # Is HTTPS or internet-y
+            all_final_matches.append(pattern)
+        else:
+            intermediate_patterns: List[str] = list(braceexpand.braceexpand(pattern))
+            has_glob_chars = any(c in pattern for c in "*?[]")
 
-        for p in intermediate_patterns:
-            expanded_p = os.path.expanduser(p)
-            matches = glob.glob(expanded_p)
-            if not matches and not has_glob_chars:
-                all_final_matches.append(expanded_p)
-            else:
-                all_final_matches.extend(matches)
+            for p in intermediate_patterns:
+                expanded_p = os.path.expanduser(p)
+                matches = glob.glob(expanded_p)
+                if not matches and not has_glob_chars:
+                    all_final_matches.append(expanded_p)
+                else:
+                    all_final_matches.extend(matches)
     return sorted(list(set(all_final_matches)))
 
 
