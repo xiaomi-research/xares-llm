@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xares-llm"
+version = "0.0.2"
+description = "eXtensive Audio Representation and Evaluation Suite - Large Language Model"
+dependencies = [
+  "loguru",
+  "numpy",
+  "jiwer",
+  "scikit-learn>=1.6.0",
+  "torch>=2.2.1",
+  "torchaudio>=2.2.1",
+  "torchmetrics>=1.6.1",
+  "pandas>=2.2.3",
+  "pytorch-ignite>=0.5.1",
+  "transformers>=4.45",
+  "tqdm",
+  "webdataset>=1.0",
+  "torchcodec>=0.8.0",
+  "accelerate>=1.10.1",
+]
+authors = [
+  {name = "Junbo Zhang", email = "zhangjunbo1@xiaomi.com"},
+  {name = "Heinrich Dinkel", email = "dinkelheinrich@xiaomi.com"},
+  {name = "Yadong Niu", email = "niuyadong@xiaomi.com"},
+  {name = "Jiahao Zhou", email = "zhoujiahao5@xiaomi.com"},
+]
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/xiaomi-research/xares-llm.git"
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,14 @@
+train_data: 
+  fsdkaggle2018:
+    prompt: "Classify the sound events on FSDKaggle"
+    key: label
+    data:
+      - env/FSDKaggle2018/train/*tar
+valid_data:
+  fsdkaggle2018:
+    prompt: "Classify the sound events on FSDKaggle"
+    key: label
+    data:
+      - env/FSDKaggle2018/test1/a.tar
+num_training_workers: 4
+

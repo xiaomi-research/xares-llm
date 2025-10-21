@@ -1,0 +1,19 @@
+eval_fsdkaggle2018:
+  data:
+    prompt: "Classify the sound events on FSDKaggle"
+    key: label
+    data:
+      - env/FSDKaggle2018/test1/a.tar
+  batch_size: 4
+  num_workers: 0
+  metric: WER
+
+eval_fsdkaggle2019:
+  data:
+    prompt: "Classify the sound events on FSDKaggle"
+    key: label
+    data:
+      - env/FSDKaggle2018/test1/a.tar
+  batch_size: 4
+  num_workers: 0
+  metric: WER
