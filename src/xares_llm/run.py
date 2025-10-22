@@ -20,7 +20,6 @@ AVAILABLE_EVALUATION_CONFIGS = {Path(_).stem: _ for _ in importlib.resources.fil
 
 def main(args):
     setup_global_logger()
-    enable_multiprocessing = args.max_jobs > 0
     torch.multiprocessing.set_start_method("spawn")
     train_config = args.train_config
 
@@ -60,11 +59,6 @@ if __name__ == "__main__":
         help="Evaluation Task .yaml. One Yaml can specify multiple datasets. By default we use the XARES-LLM datasets.",
         default=AVAILABLE_EVALUATION_CONFIGS,
     )
-    parser.add_argument(
-        "--max-jobs", type=int, default=1, help="Maximum number of concurrent tasks."
-    )
     args = parser.parse_args()
     setup_global_logger()
-
-
     main(args)

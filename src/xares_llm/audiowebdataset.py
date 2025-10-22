@@ -1,6 +1,6 @@
 from typing import Any, Callable, Dict, Iterable, List, Tuple
 import webdataset as wds
-from webdataset.tariterators import tar_file_expander
+from webdataset.tariterators import tar_file_expander, group_by_keys
 from webdataset.filters import pipelinefilter
 from urllib.parse import urlparse
 
@@ -20,19 +20,13 @@ from transformers import AutoTokenizer, PreTrainedTokenizer
 
 
 def set_cache():
-    APP_NAME = "XARES_LLM"
-    if os.name == "nt":
-        cache_base = Path(os.environ.get("LOCALAPPDATA", Path.home() / APP_NAME))
-        CACHE_DIR = cache_base / APP_NAME / "cache"
+    xdg_cache_home = os.getenv("XARES_DATA_HOME")
+    if xdg_cache_home:
+        cache_dir = Path(xdg_cache_home)
     else:
-        xdg_cache_home = os.getenv("XDG_CACHE_HOME")
-        if xdg_cache_home:
-            cache_base = Path(xdg_cache_home)
-        else:
-            cache_base = Path.cwd() / ".cache"
-        CACHE_DIR = cache_base / APP_NAME
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    return CACHE_DIR
+        cache_dir = Path.cwd() / "xares_data"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    return cache_dir
 
 
 CACHE_DIR = set_cache()
@@ -269,7 +263,7 @@ def _process_sample_stream(stream: Iterable[Dict[str, Any]],
                            ) -> Iterable[Dict[str, Any]]:
     for data_sample in stream:
         # Note: We use the local variables from the outer scope directly.
-        try:
+        # try:
             # 1. Pop and Extract Data
             audio = data_sample.pop("audio")
             tarname = data_sample.pop("tar")
@@ -349,11 +343,11 @@ def _process_sample_stream(stream: Iterable[Dict[str, Any]],
                     "text": text,
                     "filename": filename,
                 }
-        except Exception as exn:
-            if handler(exn):
-                continue
-            else:
-                break
+        # except Exception as exn:
+        #     if handler(exn):
+        #         continue
+        #     else:
+        #         break
 
 def url_to_name(url):
     parsed = urlparse(url)
@@ -364,41 +358,37 @@ def url_to_name(url):
 def create_audio_text_token_pipeline(
     urls: str | List[str],
     tokenizer: Callable,
-    cache_dir: str = "xaresllm_data",
+    cache_dir: str | None = None, # Use global CACHE_DIR
     training: bool = False,
     batch_size: int = 1,
     resample: bool = False,
-    handler: Callable = warn_and_continue,
+    handler: Callable = wds.reraise_exception,
     **filtering_kwargs,
-    # Kwargs passed to _process_sample_stream for filtering and cropping
-    # mono: bool = True,
-    # prompt: str | List[str] | Dict[str, Any] = "",
-    # target_sample_rate: int = 16000,
-    # min_audio_length: float | None = None,
-    # drop_clipped: bool = True,
-    # normalize_clipped: bool = True,
-    # crop_audio_length: float | None = None,
-    # max_text_token_length: int | None = None,
-    # text_data_key: str | None = None,
 ) -> wds.DataPipeline:
 
+    _cache_dir = cache_dir if cache_dir is not None else CACHE_DIR
     pipeline: List = []
-    logger.info(f"Pipeline start: Training={training}, Resampling={resample}, Batch={batch_size}")
+    logger.info(f"Pipeline start: Training={training}, Resampling={resample}, Batch={batch_size}, Cacheing at {_cache_dir}")
     if resample:
         pipeline.append(wds.ResampledShards(urls))
     else:
         pipeline.append(wds.SimpleShardList(urls))
+    # Important note: wds.tarfile_to_samples does not work for streaming 
+    # For streaming, one needs tar_file_expander + group_by_keys
     if training:
         pipeline.extend(
                 [wds.detshuffle(), wds.split_by_node, wds.split_by_worker, 
-                 wds.cache.FileCache(cache_dir=cache_dir, url_to_name=url_to_name),
-                 pipelinefilter(tar_file_expander)(handler=handler)]
+                 wds.cache.FileCache(cache_dir=_cache_dir, url_to_name=url_to_name),
+                 pipelinefilter(tar_file_expander)(handler=handler),
+                 pipelinefilter(group_by_keys)(handler=handler),
+                 ]
                 )
     else:
         # Ensure data is distributed even if there's only one shard
         pipeline.extend([wds.split_by_worker, 
-                         wds.cache.FileCache(cache_dir=cache_dir, url_to_name=url_to_name),
+                         wds.cache.FileCache(cache_dir=_cache_dir, url_to_name=url_to_name),
                          pipelinefilter(tar_file_expander)(handler=handler),
+                         pipelinefilter(group_by_keys)(handler=handler),
                          wds.split_by_node,
                          ])
 
@@ -574,7 +564,7 @@ def expand_path(pattern: str | List[str]) -> List[str]:
         return []
     all_final_matches: List[str] = []
     for pattern in pattern_list:
-        scheme = urlparse(pattern)
+        scheme = urlparse(pattern).scheme
         if scheme != '': # Is HTTPS or internet-y
             all_final_matches.append(pattern)
         else:
@@ -592,12 +582,17 @@ def expand_path(pattern: str | List[str]) -> List[str]:
 
 
 if __name__ == "__main__":
+    from tqdm import tqdm
     tokenizer = AutoTokenizer.from_pretrained("gpt2")
     ds = AudioTextTokenWebdataset(
         tokenizer=tokenizer,
         data_urls=[
-            "https://hf-mirror.com/datasets/mispeech/MECAT-Caption/resolve/main/SM0/train_0000-0000000.tar.gz?download=true"
+            'https://hf-mirror.com/datasets/mispeech/MECAT-Caption/resolve/main/SM0/train_0000-0000000.tar.gz?download=true',
+            # 'env/AISHELL-1/train/SLR33_Aishell1_179h_0000*.tar.gz'
         ],
-    ).create_dataset()
-    for _ in ds:
-        print(_)
+        batch_size=128,
+        num_workers=0,
+    ).create_dataloader()
+    for _ in tqdm(ds):
+        print(_['audio'].shape)
+        pass

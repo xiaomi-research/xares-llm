@@ -16,3 +16,10 @@ python3 -m xares_llm.run example/dummy/dummyencoder.py src/xares_llm/tasks/singl
 ```
 
 
+
+### Modify dataset
+
+By default all data is downloaded and stored in `xares_data` from the current directory.
+One can modify the data path with the environment variable `XARES_DATA_HOME`.
+
+
