@@ -40,10 +40,14 @@ include-package-data = true
 
 [tool.setuptools.package-data]
 xares_llm = [
-  "src/xares_llm/tasks/all/eval/*yaml",
-  "src/xares_llm/tasks/all/train/*yaml",
-  "src/xares_llm/tasks/single/eval/*.yaml",
-  "src/xares_llm/tasks/single/train/*.yaml",
+  # "src/xares_llm/tasks/all/eval/*yaml",
+  # "src/xares_llm/tasks/all/train/*yaml",
+  # "src/xares_llm/tasks/single/eval/*.yaml",
+  # "src/xares_llm/tasks/single/train/*.yaml",
+  "xares_llm/tasks/all/eval/*yaml",
+  "xares_llm/tasks/all/train/*yaml",
+  "xares_llm/tasks/single/eval/*.yaml",
+  "xares_llm/tasks/single/train/*.yaml",
 ]
 [tool.setuptools.packages.find]
 where = ["src"]
