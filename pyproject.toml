@@ -15,12 +15,11 @@ dependencies = [
   "torchaudio>=2.2.1",
   "torchmetrics>=1.6.1",
   "pandas>=2.2.3",
-  "pytorch-ignite>=0.5.1",
   "transformers>=4.45",
   "tqdm",
   "webdataset>=1.0",
   "torchcodec>=0.8.0",
-  "accelerate>=1.10.1",
+  "accelerate>=1.10.1", #Training
 ]
 authors = [
   {name = "Junbo Zhang", email = "zhangjunbo1@xiaomi.com"},
