@@ -209,12 +209,12 @@ def generate_configs(root_dir="env", output_dir="configs", workers=4):
     # Step 2: Generate and save the YAML configs
     print(f"\nGenerating configurations for {len(all_datasets)} unique datasets, separating train/valid and test splits...")
 
+    all_train_configs = {"train_data": []}
+
     for dataset_name in all_datasets:
-        
         # --- A. Generate Training Config (train + valid) ---
         train_config = {}
         has_train_data = False
-        
         for split_name in ['train']:
             if split_name in organized_data and dataset_name in organized_data[split_name]:
                 has_train_data = True
@@ -227,11 +227,19 @@ def generate_configs(root_dir="env", output_dir="configs", workers=4):
                         "key": d.key,
                     }
                 }
+
+                all_train_configs['train_data'].append(train_config[config_key])
         if has_train_data:
             train_config["num_training_workers"] = workers
             output_filepath = Path(output_dir) / f"{dataset_name.lower()}_config.yaml"
             with open(output_filepath, 'w') as f:
                 yaml.dump(train_config, f, sort_keys=False, default_flow_style=False)
+            print(f"  -> Generated Training Config: {output_filepath}")
+
+
+            output_filepath_all = Path(output_dir) / f"all_train_config.yaml"
+            with open(output_filepath_all, 'w') as f:
+                yaml.dump(all_train_configs, f, sort_keys=False, default_flow_style=False)
             print(f"  -> Generated Training Config: {output_filepath}")
 
 
