@@ -2,7 +2,7 @@ eval_asvspoof2015:
   data:
     data:
     - env/ASVSpoof2015/test/asvspoof_eval_000{00..193}.tar.gz
-    key: text;caption;captions;label;labels
+    key: binary_spoof
     prompt: Detect if the audio is genuine or a spoof.
   batch_size: 4
   num_workers: 0

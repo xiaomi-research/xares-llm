@@ -2,7 +2,7 @@ eval_clotho:
   data:
     data:
     - env/Clotho/test/test_00000{00..04}.tar.gz
-    key: text;caption;captions;label;labels
+    key: caption;captions
     prompt: Generate a short caption for the audio.
   batch_size: 4
   num_workers: 0

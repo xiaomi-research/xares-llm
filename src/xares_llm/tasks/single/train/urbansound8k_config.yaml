@@ -2,6 +2,6 @@ train_data:
   Urbansound8k:
     prompt: Classify the urban sound.
     data:
-    - env/Urbansound8k/train/urbansound_fold{01..09}_0000000.tar.gz
-    key: text;caption;captions;label;labels
+    - env/Urbansound8k/train/urbansound_fold{1..9}_0000000.tar.gz
+    key: soundevent
 num_training_workers: 4

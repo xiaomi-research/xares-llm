@@ -1,8 +1,8 @@
 eval_fsdkaggle2018:
   data:
     data:
-    - env/FSDKaggle2018/test/test_with_text_00000{00..02}.tar.gz
-    key: text;caption;captions;label;labels
+    - env/FSDKaggle2018/test/test_with_text_0000{00..02}.tar.gz
+    key: label;labels
     prompt: Multi-label classification for FSDKaggle2018
   batch_size: 4
   num_workers: 0

@@ -2,6 +2,6 @@ train_data:
   CremaD:
     prompt: Identify the emotion expressed in the speech.
     data:
-    - env/CremaD/train/train_cremad_with_text_00000{00..05}.tar.gz
+    - env/CremaD/train/train_cremad_with_text_0000{00..05}.tar.gz
     key: text;caption;captions;label;labels
 num_training_workers: 4

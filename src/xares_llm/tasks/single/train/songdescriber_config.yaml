@@ -2,6 +2,6 @@ train_data:
   Songdescriber:
     prompt: Generate a caption for the music
     data:
-    - env/Songdescriber/train/train_song_describer_00000{00..01}.tar.gz
-    key: text;caption;captions;label;labels
+    - env/Songdescriber/train/train_song_describer_0000{00..01}.tar.gz
+    key: caption
 num_training_workers: 4

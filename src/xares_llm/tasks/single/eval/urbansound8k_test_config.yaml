@@ -2,7 +2,7 @@ eval_urbansound8k:
   data:
     data:
     - env/Urbansound8k/test/urbansound_fold10_0000000.tar.gz
-    key: text;caption;captions;label;labels
+    key: soundevent
     prompt: Classify the urban sound.
   batch_size: 4
   num_workers: 0

@@ -3,5 +3,5 @@ train_data:
     prompt: Classify the music instrument.
     data:
     - env/NSynth/train/train_00000{00..28}.tar.gz
-    key: text;caption;captions;label;labels
+    key: instrument_family_str
 num_training_workers: 4

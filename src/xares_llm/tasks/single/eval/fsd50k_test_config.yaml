@@ -2,7 +2,7 @@ eval_fsd50k:
   data:
     data:
     - env/FSD50k/test/eval_with_text_0000{00..31}.tar.gz
-    key: text;caption;captions;label;labels
+    key: label;labels
     prompt: Multi-label classification for FSD50k
   batch_size: 4
   num_workers: 0

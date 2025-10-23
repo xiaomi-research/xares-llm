@@ -3,5 +3,5 @@ train_data:
     prompt: Detect if the audio is genuine or a spoof.
     data:
     - env/ASVSpoof2015/train/asvspoof_train_0000{00..17}.tar.gz
-    key: text;caption;captions;label;labels
+    key: binary_spoof
 num_training_workers: 4

@@ -429,7 +429,7 @@ class AudioTextTokenWebdataset:
     mono: bool = True
     batch_size: int = 1
     min_audio_length: float | None = None
-    drop_clipped: bool = True
+    drop_clipped: bool = False
     normalize_clipped: bool = True
     crop_audio_length: float | None = None
     max_text_token_length: int | None = None

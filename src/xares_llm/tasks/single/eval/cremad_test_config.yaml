@@ -1,8 +1,8 @@
 eval_cremad:
   data:
     data:
-    - env/CremaD/test/valid_cremad_with_text_00000{00..01}.tar.gz
-    key: text;caption;captions;label;labels
+    - env/CremaD/test/valid_cremad_with_text_0000{00..01}.tar.gz
+    key: label;labels
     prompt: Identify the emotion expressed in the speech.
   batch_size: 4
   num_workers: 0

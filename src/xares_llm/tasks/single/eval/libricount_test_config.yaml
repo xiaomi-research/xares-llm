@@ -2,7 +2,7 @@ eval_libricount:
   data:
     data:
     - env/LibriCount/test/libricount_fold04.tar.gz
-    key: text;caption;captions;label;labels
+    key: num_speakers
     prompt: Count the amount of speakers.
   batch_size: 4
   num_workers: 0

@@ -2,6 +2,6 @@ train_data:
   FSDKaggle2018:
     prompt: Multi-label classification for FSDKaggle2018
     data:
-    - env/FSDKaggle2018/train/train_with_text_0000{00..02}0.tar.gz
-    key: text;caption;captions;label;labels
+    - env/FSDKaggle2018/train/train_with_text_0000{00..20}.tar.gz
+    key: label;labels
 num_training_workers: 4

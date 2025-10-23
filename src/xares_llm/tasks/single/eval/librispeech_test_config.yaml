@@ -2,7 +2,7 @@ eval_librispeech:
   data:
     data:
     - env/LibriSpeech/test/test-clean-0000{00..19}.tar.gz
-    key: text;caption;captions;label;labels
+    key: trans
     prompt: Transcribe the English speech into text
   batch_size: 4
   num_workers: 0

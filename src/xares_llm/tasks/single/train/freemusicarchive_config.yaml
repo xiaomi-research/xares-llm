@@ -3,5 +3,5 @@ train_data:
     prompt: Classify the music genre (FMA).
     data:
     - env/FreeMusicArchive/train/small_train_0000{00..63}.tar.gz
-    key: text;caption;captions;label;labels
+    key: genre
 num_training_workers: 4
