@@ -231,7 +231,7 @@ class XaresLLMTask:
         else:
             raise ValueError("You need to provide either trained_model or chpt_path.")
 
-        metrics_compute_function = get_metric(eval_config.metric, tokenizer=self.tokenizer)
+        metrics_compute_function = get_metric(eval_config.metric, tokenizer=self.tokenizer, **eval_config.metric_args)
 
         data_object_eval = AudioTextTokenWebdataset(
             data_urls=eval_config.test_data,

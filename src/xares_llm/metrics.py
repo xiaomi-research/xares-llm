@@ -1,6 +1,7 @@
 from typing import Literal, List
 import numpy as np
 from sklearn.metrics import accuracy_score, average_precision_score
+import itertools
 from transformers import EvalPrediction
 from jiwer import cer, wer
 import unicodedata
@@ -15,6 +16,24 @@ def preprocess_string(text: str):
     text = text.translate(str.maketrans("", "", string.punctuation))
     text = re.sub(r"\s+", " ", text).strip()
     return text
+
+def average_precision_score_with_string(
+    y_true: List[str], y_pred: List[str], num_classes: int, separator: str = ";", **kwargs
+):
+    unique_labels = set(itertools.chain(*[s.split(separator) for s in y_true]))
+    label_to_index = {label: idx for idx, label in enumerate(unique_labels)}
+    # Encode targets and predictions into binary multi-label format
+    target_tensor = np.zeros((len(y_true), num_classes), dtype=np.float32)
+    pred_tensor = np.zeros((len(y_pred), num_classes), dtype=np.float32)
+
+    for i, labels in enumerate(y_true):
+        indices = [label_to_index[label] for label in labels.split(separator) if label in label_to_index]
+        target_tensor[i, indices] = 1.0
+
+    for i, labels in enumerate(y_pred):
+        indices = [label_to_index[label] for label in labels.split(separator) if label in label_to_index]
+        pred_tensor[i, indices] = 1.0
+    return average_precision_score(target_tensor, pred_tensor, **kwargs)
 
 
 class MetricRegistry:
@@ -97,16 +116,17 @@ class Accuracy:
 
 @MetricRegistry.register
 class mAP:
-    def __init__(self, tokenizer, num_classes:int, **kwargs):
+    def __init__(self, tokenizer, num_classes:int, separator:str = ';', **kwargs):
         self.tokendecoder = TokenDecoder(tokenizer)
         self.num_classes = num_classes
+        self.separator = separator
         super().__init__(**kwargs)
 
     def __call__(self, pred: EvalPrediction):
         preds, targets = self.tokendecoder.decode_predictions(pred)
         preds = list(map(preprocess_string, preds))
         targets = list(map(preprocess_string, targets))
-        return {"Accuracy": accuracy_score(targets, preds)} # scikit supports strings 
+        return {"mAP": average_precision_score_with_string(targets, preds, num_classes=self.num_classes, separator=self.separator)} # scikit supports strings 
 
 RegisteredMetricsLiteral = MetricRegistry.get_registered_names()
 

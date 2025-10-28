@@ -8,3 +8,5 @@ eval_fsd50k:
   batch_size: 4
   num_workers: 0
   metric: mAP
+  metric_args:
+    num_classes: 41

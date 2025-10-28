@@ -54,6 +54,8 @@ eval_fsd50k:
   batch_size: 4
   num_workers: 0
   metric: mAP
+  metric_args:
+    num_classes: 200
 eval_fsdkaggle2018:
   prompt: Multi-label classification for FSDKaggle2018
   key: text;caption;captions;label;labels
@@ -62,6 +64,8 @@ eval_fsdkaggle2018:
   batch_size: 4
   num_workers: 0
   metric: mAP
+  metric_args:
+    num_classes: 41
 eval_gtzan:
   prompt: Classify the music genre (GTZAN).
   key: text;caption;captions;label;labels
