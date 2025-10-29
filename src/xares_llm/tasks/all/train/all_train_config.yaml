@@ -2,114 +2,136 @@ train_data:
     ESC-50:
         prompt: Classify the environmental sound.
         data:
-            - env/ESC-50/train/esc50_fold_{1..4}_0000000.tar.gz
+            - ESC-50/train/esc50_fold_{1..4}_0000000.tar.gz
         key: label;labels
+        repo_id: mispeech/xares_llm_data
     SpeechCommandsV1:
         prompt: Classify the keyword.
         data:
-            - env/SpeechCommandsV1/train/train_renamed_with_text_0000{00..51}.tar.gz
+            - SpeechCommandsV1/train/train_renamed_with_text_0000{00..51}.tar.gz
         key: text;caption;captions;label;labels
         prob: 0.05
+        repo_id: mispeech/xares_llm_data
     FluentSpeechCommands:
         prompt: Identify the command, action, and object from the speech.
         data:
-            - env/FluentSpeechCommands/train/train_intent_with_text_0000{00..23}.tar.gz
+            - FluentSpeechCommands/train/train_intent_with_text_0000{00..23}.tar.gz
         key: text;caption;captions;label;labels
+        repo_id: mispeech/xares_llm_data
     FSDKaggle2018:
         prompt: Multi-label classification for FSDKaggle2018
         data:
-            - env/FSDKaggle2018/train/train_with_text_0000{00..20}.tar.gz
+            - FSDKaggle2018/train/train_with_text_0000{00..20}.tar.gz
         key: label;labels
+        repo_id: mispeech/xares_llm_data
     VoxCeleb1:
         prompt: Are the two speakers the same or different?
         data:
-            - env/VoxCeleb1/train/train_0000{00..39}.tar.gz
+            - VoxCeleb1/train/train_0000{00..39}.tar.gz
         key: label;labels
+        repo_id: mispeech/xares_llm_data
     NSynth:
         prompt: Classify the music instrument.
         data:
-            - env/NSynth/train/train_000{000..371}.tar.gz
+            - NSynth/train/train_000{000..371}.tar.gz
         key: instrument_family_str
+        prob: 0.03
+        repo_id: mispeech/xares_llm_data
     AISHELL-1:
         prompt: Transcribe the Chinese speech into text.
         data:
-            - env/AISHELL-1/train/train_0000{000..173}.tar.gz
+            - AISHELL-1/train/train_000{000..173}.tar.gz
         key: text
+        repo_id: mispeech/xares_llm_data
+        prob: 0.05
     CremaD:
         prompt: Identify the emotion expressed in the speech.
         data:
-            - env/CremaD/train/train_cremad_with_text_0000{00..05}.tar.gz
+            - CremaD/train/train_cremad_with_text_0000{00..05}.tar.gz
         key: label
+        repo_id: mispeech/xares_llm_data
     Songdescriber:
         prompt: Generate a caption for the music
         data:
-            - env/Songdescriber/train/train_song_describer_0000{00..01}.tar.gz
+            - Songdescriber/train/train_song_describer_0000{00..01}.tar.gz
         key: caption
+        repo_id: mispeech/xares_llm_data
     ASVSpoof2015:
         prompt: Detect if the audio is genuine or a spoof.
         data:
-            - env/ASVSpoof2015/train/asvspoof_train_0000{00..17}.tar.gz
+            - ASVSpoof2015/train/asvspoof_train_0000{00..17}.tar.gz
         key: binary_spoof
+        repo_id: mispeech/xares_llm_data
     FreeMusicArchive:
         prompt: Classify the music genre (FMA).
         data:
-            - env/FreeMusicArchive/train/small_train_0000{00..63}.tar.gz
+            - FreeMusicArchive/train/small_train_0000{00..63}.tar.gz
         key: genre
+        repo_id: mispeech/xares_llm_data
     FSD50k:
         prompt: Multi-label classification for FSD50k
         data:
-            - env/FSD50k/train/train_with_text_0000{00..08}.tar.gz
+            - FSD50k/train/train_with_text_0000{00..08}.tar.gz
         key: label;labels
+        repo_id: mispeech/xares_llm_data
     Urbansound8k:
         prompt: Classify the urban sound.
         data:
-            - env/Urbansound8k/train/urbansound_fold{1..9}_0000000.tar.gz
+            - Urbansound8k/train/urbansound_fold{1..9}_0000000.tar.gz
         key: soundevent
+        repo_id: mispeech/xares_llm_data
     GTZAN:
         prompt: Classify the music genre (GTZAN).
         data:
-            - env/GTZAN/train/gtzan_fold_{0..8}_0000000.tar.gz
+            - GTZAN/train/gtzan_fold_{0..8}_0000000.tar.gz
         key: genre
+        repo_id: mispeech/xares_llm_data
     VocalSound:
         prompt: Classify the vocal sound.
         data:
-            - env/VocalSound/train/train_with_text_0000{00..20}.tar.gz
+            - VocalSound/train/train_with_text_0000{00..20}.tar.gz
         key: text;caption;captions;label;labels
+        repo_id: mispeech/xares_llm_data
     Clotho:
         prompt: Generate a short caption for the audio.
         data:
-            - env/Clotho/train/train_0000{00..17}.tar.gz
+            - Clotho/train/train_0000{00..17}.tar.gz
         key: text;caption;captions;label;labels
         prob: 0.02
+        repo_id: mispeech/xares_llm_data
     LibriSpeech:
         prompt: Transcribe the English speech into text
         data:
-            - env/LibriSpeech/train/train-clean-100-0000{00..19}.tar.gz
+            - LibriSpeech/train/train-clean-100-0000{00..19}.tar.gz
         key: trans
-        prob: 0.1
+        prob: 0.05
+        repo_id: mispeech/xares_llm_data
     LibriCount:
         prompt: Count the amount of speakers.
         data:
-            - env/LibriCount/train/libricount_fold{00..03}.tar.gz
+            - LibriCount/train/libricount_fold{00..03}.tar.gz
         key: num_speakers
+        repo_id: mispeech/xares_llm_data
     VoxLingua33:
         prompt: Classify the language.
         data:
-            - env/VoxLingua33/train/train_subset_k_000{00..209}.tar.gz
+            - VoxLingua33/train/train_subset_k_000{000..209}.tar.gz
         key: label;labels
         prob: 0.2
+        repo_id: mispeech/xares_llm_data
     MECAT:
         prompt: Write a general audiocaption.
         data:
-            - env/MECAT-Caption/0M0/train_0000-0000000.tar.gz
-            - env/MECAT-Caption/000/train_0000-0000000.tar.gz
-            - env/MECAT-Caption/SMA/train_0000-0000000.tar.gz
-            - env/MECAT-Caption/S00/train_0000-0000000.tar.gz
-            - env/MECAT-Caption/S00/train_0001-0000000.tar.gz
-            - env/MECAT-Caption/0MA/train_0000-0000000.tar.gz
-            - env/MECAT-Caption/S0A/train_0000-0000000.tar.gz
-            - env/MECAT-Caption/SM0/train_0000-0000000.tar.gz
-            - env/MECAT-Caption/SM0/train_0001-0000000.tar.gz
-            - env/MECAT-Caption/00A/train_0000-0000000.tar.gz
+            - 0M0/train_0000-0000000.tar.gz
+            - 000/train_0000-0000000.tar.gz
+            - SMA/train_0000-0000000.tar.gz
+            - S00/train_0000-0000000.tar.gz
+            - S00/train_0001-0000000.tar.gz
+            - 0MA/train_0000-0000000.tar.gz
+            - S0A/train_0000-0000000.tar.gz
+            - SM0/train_0000-0000000.tar.gz
+            - SM0/train_0001-0000000.tar.gz
+            - 00A/train_0000-0000000.tar.gz
         key: short
-        prob: 0.3
+        repo_id: mispeech/MECAT-Caption
+        prob: 0.2

@@ -64,11 +64,15 @@ if __name__ == "__main__":
         "train_config",
         type=XaresLLMTrainConfig.from_file_or_key,
         help=f"Tasks .yaml or predefined dataset. Datasets are: {list(AVAILABLE_TRAINING_CONFIGS.keys())}",
+        nargs = "?",
+        default='all',
     )
     parser.add_argument(
         "eval_configs",
         type=XaresLLMEvaluationConfig.configs_from_file_or_key,
+        nargs = "?",
         help=f"Evaluation Task .yaml. One Yaml can specify multiple datasets. By default we use the XARES-LLM datasets. Datasets are : {list(AVAILABLE_EVALUATION_CONFIGS.keys())} ",
+        default='all',
     )
     parser.add_argument(
         "--model_args",

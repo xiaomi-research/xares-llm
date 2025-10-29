@@ -2,7 +2,7 @@ train_data:
   VoxLingua33:
     prompt: Classify the language.
     data:
-    - VoxLingua33/train/train_subset_k_000{00..209}.tar.gz
+    - VoxLingua33/train/train_subset_k_000{000..209}.tar.gz
     key: label;labels
     repo_id: mispeech/xares_llm_data
 num_training_workers: 4

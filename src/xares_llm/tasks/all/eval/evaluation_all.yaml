@@ -1,132 +1,213 @@
 eval_aishell-1:
-  prompt: Transcribe the Chinese speech into text.
-  key: text
   data:
-  - env/AISHELL-1/test/test_0000{000..011}.tar.gz
+    prompt: Transcribe the Chinese speech into text.
+    data:
+    - AISHELL-1/test/test_000{000..011}.tar.gz
+    key: text
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: iCER
 eval_asvspoof2015:
-  prompt: Detect if the audio is genuine or a spoof.
-  key: text;caption;captions;label;labels
   data:
-  - env/ASVSpoof2015/test/asvspoof_eval_000{00..193}.tar.gz
+    data:
+    - ASVSpoof2015/test/asvspoof_eval_000{00..193}.tar.gz
+    key: binary_spoof
+    prompt: Detect if the audio is genuine or a spoof.
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: Accuracy
 eval_clotho:
-  prompt: Generate a short caption for the audio.
-  key: text;caption;captions;label;labels
   data:
-  - env/Clotho/test/test_00000{00..04}.tar.gz
+    data:
+    - Clotho/test/test_00000{00..04}.tar.gz
+    key: caption;captions
+    prompt: Generate a short caption for the audio.
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: FENSE
-eval_esc-50:
-  prompt: Classify the environmental sound.
-  key: text;caption;captions;label;labels
+eval_cremad:
   data:
-  - env/ESC-50/test/esc50_fold_5_0000000.tar.gz
+    data:
+    - CremaD/test/valid_cremad_with_text_0000{00..01}.tar.gz
+    key: label;labels
+    prompt: Identify the emotion expressed in the speech.
+    repo_id: mispeech/xares_llm_data
+  batch_size: 4
+  num_workers: 0
+  metric: Accuracy
+eval_esc-50:
+  data:
+    data:
+    - ESC-50/test/esc50_fold_5_0000000.tar.gz
+    key: text;caption;captions;label;labels
+    prompt: Classify the environmental sound.
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: Accuracy
 eval_fluentspeechcommands:
-  prompt: Identify the command, action, and object from the speech.
-  key: text;caption;captions;label;labels
   data:
-  - env/FluentSpeechCommands/test/test_intent_with_text_00000{00..03}.tar.gz
+    data:
+    - FluentSpeechCommands/test/test_intent_with_text_00000{00..03}.tar.gz
+    key: text;caption;captions;label;labels
+    prompt: Identify the command, action, and object from the speech.
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: Accuracy
 eval_freemusicarchive:
-  prompt: Classify the music genre (FMA).
-  key: text;caption;captions;label;labels
   data:
-  - env/FreeMusicArchive/test/fma_small_test_00000{00..07}.tar.gz
+    data:
+    - FreeMusicArchive/test/fma_small_test_00000{00..07}.tar.gz
+    key: text;caption;captions;label;labels
+    prompt: Classify the music genre (FMA).
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: Accuracy
 eval_fsd50k:
-  prompt: Multi-label classification for FSD50k
-  key: text;caption;captions;label;labels
   data:
-  - env/FSD50k/test/eval_with_text_0000{00..31}.tar.gz
+    data:
+    - FSD50k/test/eval_with_text_0000{00..31}.tar.gz
+    key: label;labels
+    prompt: Multi-label classification for FSD50k
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: mAP
   metric_args:
-    num_classes: 200
+    num_classes: 41
 eval_fsdkaggle2018:
-  prompt: Multi-label classification for FSDKaggle2018
-  key: text;caption;captions;label;labels
   data:
-  - env/FSDKaggle2018/test/test_with_text_00000{00..02}.tar.gz
+    data:
+    - FSDKaggle2018/test/test_with_text_0000{00..02}.tar.gz
+    key: label;labels
+    prompt: Multi-label classification for FSDKaggle2018
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: mAP
   metric_args:
     num_classes: 41
 eval_gtzan:
-  prompt: Classify the music genre (GTZAN).
-  key: text;caption;captions;label;labels
   data:
-  - env/GTZAN/test/gtzan_fold_9_0000000.tar.gz
+    data:
+    - GTZAN/test/gtzan_fold_9_0000000.tar.gz
+    key: genre
+    prompt: Classify the music genre (GTZAN).
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: Accuracy
 eval_libricount:
-  prompt: Count the amount of speakers.
-  key: text;caption;captions;label;labels
   data:
-  - env/LibriCount/test/libricount_fold04.tar.gz
+    data:
+    - LibriCount/test/libricount_fold04.tar.gz
+    key: num_speakers
+    prompt: Count the amount of speakers.
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: Accuracy
 eval_librispeech:
-  prompt: Transcribe the English speech into text
-  key: text;caption;captions;label;labels
   data:
-  - env/LibriSpeech/test/test-clean-0000{00..19}.tar.gz
+    data:
+    - LibriSpeech/test/test-clean-0000{00..19}.tar.gz
+    key: trans
+    prompt: Transcribe the English speech into text
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: iWER
-eval_nsynth:
-  prompt: Classify the music instrument.
-  key: text;caption;captions;label;labels
+eval_mecat:
   data:
-  - env/NSynth/test/test_00000{0..5}.tar.gz
+    data:
+    - MECAT-Caption/0M0/test_0000-0000000.tar.gz
+    - MECAT-Caption/000/test_0000-0000000.tar.gz
+    - MECAT-Caption/SMA/test_0000-0000000.tar.gz
+    - MECAT-Caption/S00/test_0000-0000000.tar.gz
+    - MECAT-Caption/S00/test_0001-0000000.tar.gz
+    - MECAT-Caption/0MA/test_0000-0000000.tar.gz
+    - MECAT-Caption/S0A/test_0000-0000000.tar.gz
+    - MECAT-Caption/SM0/test_0000-0000000.tar.gz
+    - MECAT-Caption/SM0/test_0001-0000000.tar.gz
+    - MECAT-Caption/00A/test_0000-0000000.tar.gz
+    key: short
+    prompt: Write a general audiocaption.
+    repo_id: mispeech/xares_llm_data
+  batch_size: 4
+  num_workers: 0
+  metric: FENSE
+eval_nsynth:
+  data:
+    data:
+    - NSynth/test/test_0000000.tar.gz
+    key: text;caption;captions;label;labels
+    prompt: Classify the music instrument.
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: Accuracy
-eval_speechcommandsv1:
-  prompt: Classify the keyword.
-  key: text;caption;captions;label;labels
+eval_songdescriber:
   data:
-  - env/SpeechCommandsV1/test/test_renamed_with_text_00000{00..06}.tar.gz
+    data:
+    - Songdescriber/test/valid_song_describer_0000{00..01}.tar.gz
+    key: captions
+    prompt: Generate a caption for the music
+    repo_id: mispeech/xares_llm_data
+  batch_size: 4
+  num_workers: 0
+  metric: FENSE
+eval_speechcommandsv1:
+  data:
+    data:
+    - SpeechCommandsV1/test/test_renamed_with_text_00000{00..06}.tar.gz
+    key: text;caption;captions;label;labels
+    prompt: Classify the keyword.
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: Accuracy
 eval_urbansound8k:
-  prompt: Classify the urban sound.
-  key: text;caption;captions;label;labels
   data:
-  - env/Urbansound8k/test/urbansound_fold10_0000000.tar.gz
+    data:
+    - Urbansound8k/test/urbansound_fold10_0000000.tar.gz
+    key: soundevent
+    prompt: Classify the urban sound.
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: Accuracy
 eval_vocalsound:
-  prompt: Classify the vocal sound.
-  key: text;caption;captions;label;labels
   data:
-  - env/VocalSound/test/test_00000{00..04}.tar.gz
+    data:
+    - VocalSound/test/test_0000{00..04}.tar.gz
+    key: labels
+    prompt: Classify the vocal sound.
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: Accuracy
 eval_voxceleb1:
-  prompt: Are the two speakers the same or different?
-  key: text;caption;captions;label;labels
   data:
-  - env/VoxCeleb1/test/test_0000{00..18}.tar.gz
+    data:
+    - VoxCeleb1/test/test_0000{00..18}.tar.gz
+    key: text;caption;captions;label;labels
+    prompt: Are the two speakers the same or different?
+    repo_id: mispeech/xares_llm_data
+  batch_size: 4
+  num_workers: 0
+  metric: Accuracy
+eval_voxlingua33:
+  data:
+    data:
+    - VoxLingua33/test/dev_00000{00..05}.tar.gz
+    key: text;caption;captions;label;labels
+    prompt: Classify the language.
+    repo_id: mispeech/xares_llm_data
   batch_size: 4
   num_workers: 0
   metric: Accuracy

@@ -600,7 +600,6 @@ def expand_path(data_type : AudioTextDataType) -> List[str]:
                         all_final_matches.append(expanded_p)
                     else:
                         all_final_matches.extend(matches)
-    print(f"{all_final_matches=}")
     return sorted(list(set(all_final_matches)))
 
 

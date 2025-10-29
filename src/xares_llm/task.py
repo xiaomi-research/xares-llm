@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+
 import torch
 from pathlib import Path
 from transformers import AutoTokenizer, TrainingArguments
+from transformers.models.albert.modeling_albert import ALBERT_ATTENTION_CLASSES
 import yaml
 from dataclasses import dataclass, field, asdict
 from loguru import logger
