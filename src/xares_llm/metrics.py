@@ -82,11 +82,13 @@ class TokenDecoder:
         if isinstance(predictions, np.ndarray) and len(predictions.shape) > 2:
             predictions = np.argmax(predictions, axis=-1)
         label_ids[label_ids == -100] = self.tokenizer.pad_token_id
+        predictions[predictions == -100] = self.tokenizer.pad_token_id
         decoded_preds = self.tokenizer.batch_decode(predictions, skip_special_tokens=True)
         decoded_labels = self.tokenizer.batch_decode(label_ids, skip_special_tokens=True)
 
         decoded_preds = [pred.strip() for pred in decoded_preds]
         decoded_labels = [label.strip() for label in decoded_labels]
+        print(f"{decoded_preds=} {decoded_labels=}")
         return decoded_preds, decoded_labels
 
 

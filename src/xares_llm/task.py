@@ -20,7 +20,6 @@ from __future__ import annotations
 import torch
 from pathlib import Path
 from transformers import AutoTokenizer, TrainingArguments
-from transformers.models.albert.modeling_albert import ALBERT_ATTENTION_CLASSES
 import yaml
 from dataclasses import dataclass, field, asdict
 from loguru import logger
@@ -28,7 +27,7 @@ from typing import Any, Callable, Dict, List
 
 from xares_llm.utils import seed_everything, setup_global_logger
 from xares_llm.audiowebdataset import AudioTextDataType, AudioTextTokenWebdataset
-from xares_llm.trainer import XaresLLMEvaluator, XaresLLMTrainer
+from xares_llm.trainer import XaresLLMTrainerEvaluator
 from xares_llm.modeling_audiollm import XaresLLMModel, XaresLLMModelConfig
 from xares_llm.metrics import get_metric, RegisteredMetricsLiteral
 import importlib
@@ -90,7 +89,6 @@ class XaresLLMTrainConfig:
 
     batch_size_train: int = 16
     learning_rate: float = 1e-4
-    iterations: int = 100_000
     num_training_workers: int = 4
     sort_by_length: int = 256  # Sort 256 samples by length, speedup training
 
@@ -111,6 +109,7 @@ class XaresLLMTrainConfig:
 
         setup_global_logger()
         seed_everything(self.seed)
+        logger.info(f"Mixed precision training: BF16={self.bf16} FP16={self.fp16}")
 
     def __repr__(self):
         return pprint.pformat(asdict(self))
@@ -180,6 +179,31 @@ class XaresLLMTask:
         logger.info(f"Experiment output path set to {self.output_dir}")
         logger.info(f"Loading {train_config.decoder_model_name} tokenizer")
         self.tokenizer = AutoTokenizer.from_pretrained(train_config.decoder_model_name)
+        training_args = TrainingArguments(
+            output_dir=str(self.output_dir),
+            learning_rate=self.train_config.learining_rate, 
+            per_device_train_batch_size=self.train_config.per_device_train_batch_size,
+            save_total_limit=self.train_config.save_total_limit,
+            save_steps=self.train_config.save_steps,
+            warmup_steps=self.train_config.warmup_steps,
+            logging_steps=10,
+            max_steps=self.train_config.max_steps,
+            optim=self.train_config.optimizer,
+            weight_decay=self.train_config.weight_decay,
+            seed=self.train_config.seed,
+            save_safetensors=False,
+            torch_compile=self.train_config.torch_compile,
+            bf16=self.train_config.bf16,
+            fp16=self.train_config.fp16,
+            logging_dir=Path(self.output_dir) / self.train_config.logging_dir,
+            gradient_accumulation_steps=self.train_config.gradient_accumulation_steps,
+        )
+        # Lazy init, during .train() or .eval()
+        model_init_function = lambda : XaresLLMModel(
+                config=XaresLLMModelConfig(decoder_type=self.train_config.decoder_model_name),
+                audio_encoder=self.audio_encoder,
+            )
+        self.trainer = XaresLLMTrainerEvaluator(model=None, model_init=model_init_function, args=training_args)
 
     def run_mlp(self, eval_configs: List[XaresLLMEvaluationConfig]) -> List[Dict[str, Any]]:
         if not isinstance(eval_configs, list):
@@ -196,11 +220,7 @@ class XaresLLMTask:
         return result
 
     def train_mlp(self) -> XaresLLMModel:
-        model = XaresLLMModel(
-            config=XaresLLMModelConfig(decoder_type=self.train_config.decoder_model_name),
-            audio_encoder=self.audio_encoder,
-        )
-        data_object = AudioTextTokenWebdataset(
+        train_data_object = AudioTextTokenWebdataset(
             data_urls=self.train_config.train_data,
             tokenizer=self.tokenizer,
             training=True,
@@ -210,29 +230,9 @@ class XaresLLMTask:
             num_workers=self.train_config.num_training_workers,
             crop_audio_length=self.train_config.crop_audio_length,
         )
-
-        training_args = TrainingArguments(
-            output_dir=str(self.output_dir),
-            learning_rate=self.train_config.learining_rate,  # Using the typo'd attribute value
-            per_device_train_batch_size=self.train_config.per_device_train_batch_size,
-            # Remaining arguments
-            save_total_limit=self.train_config.save_total_limit,
-            save_steps=self.train_config.save_steps,
-            warmup_steps=self.train_config.warmup_steps,
-            max_steps=self.train_config.max_steps,
-            optim=self.train_config.optimizer,
-            weight_decay=self.train_config.weight_decay,
-            seed=self.train_config.seed,
-            save_safetensors=False,
-            torch_compile=self.train_config.torch_compile,
-            bf16=self.train_config.bf16,
-            fp16=self.train_config.fp16,
-            logging_dir=Path(self.output_dir) / self.train_config.logging_dir,
-            gradient_accumulation_steps=self.train_config.gradient_accumulation_steps,
-        )
-        trainer = XaresLLMTrainer(model, training_args, train_data_object=data_object)
-        trainer.train()
-        return model
+        self.trainer.train_data_object = train_data_object
+        self.trainer.train()
+        return self.trainer.model
 
     def evaluate_mlp(
         self,
@@ -246,22 +246,22 @@ class XaresLLMTask:
             logger.info(f"Loaded model parameters from {chpt_path}")
             model = XaresLLMModel.from_pretrained(chpt_path, audio_encoder=self.audio_encoder)
         else:
-            raise ValueError("You need to provide either trained_model or chpt_path.")
+            model = self.trainer.model
+
+        self.trainer.model = model
 
         metrics_compute_function = get_metric(eval_config.metric, tokenizer=self.tokenizer, **eval_config.metric_args)
 
         data_object_eval = AudioTextTokenWebdataset(
-            data_urls=eval_config.test_data,
+            data_urls=eval_config.data,
             tokenizer=self.tokenizer,
             training=False,
             batch_size=eval_config.batch_size,
             sort_by_length=256, # just to speed up a bit
             num_workers=eval_config.num_workers,
         )
-        evaluator = XaresLLMEvaluator(
-            model, data_object_eval=data_object_eval, compute_metrics=metrics_compute_function
-        )
-        return evaluator.evaluate()
+        self.trainer.compute_metrics = metrics_compute_function
+        return self.trainer.evaluate(eval_dataset = data_object_eval)
 
     def run(self, eval_configs: List[XaresLLMEvaluationConfig]):
         scores = self.run_mlp(eval_configs=eval_configs)

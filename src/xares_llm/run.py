@@ -17,7 +17,6 @@ import json
 from typing import Dict, Any, List
 
 import pandas as pd
-import torch
 from loguru import logger
 from pathlib import Path
 
