@@ -23,6 +23,7 @@ from transformers import AutoTokenizer, TrainingArguments
 import yaml
 from dataclasses import dataclass, field, asdict
 from loguru import logger
+import datetime
 from typing import Any, Callable, Dict, List
 
 from xares_llm.utils import seed_everything, setup_global_logger
@@ -59,7 +60,7 @@ class XaresLLMTrainConfig:
     train_data: List[AudioTextDataType] | None = None
 
     # decoder
-    decoder_model_name: str = "gpt2"
+    decoder_model_name: str = "Qwen/Qwen3-0.6B"
 
     # Dataloader/dataset arguments
     seed: int = field(default=42)
@@ -72,12 +73,12 @@ class XaresLLMTrainConfig:
         metadata={"help": "Total number of training steps to perform (default: 200k)."},
     )
     per_device_train_batch_size: int = field(
-        default=16, metadata={"help": "Batch size per device during training (default: 16)."}
+        default=4, metadata={"help": "Batch size per device during training (default: 4)."}
     )
 
     # Optimizer
     optimizer: str = "adamw_torch"  # adamw_bnb_8bit
-    learining_rate: float = field(default=1e-4)
+    learning_rate: float = field(default=1e-4)
     weight_decay: float = field(default=0.01)
     seed: int = field(default=42)
     torch_compile: bool = field(default=False)
@@ -85,10 +86,8 @@ class XaresLLMTrainConfig:
     fp16: bool = False  # Will be set automatically
     max_grad_norm: float = field(default=1.0)
     logging_dir: str = "log"
-    gradient_accumulation_steps: int = field(default=1)
-
-    batch_size_train: int = 16
-    learning_rate: float = 1e-4
+    logging_steps: int = 100
+    gradient_accumulation_steps: int = field(default=4)
     num_training_workers: int = 4
     sort_by_length: int = 256  # Sort 256 samples by length, speedup training
 
@@ -175,23 +174,31 @@ class XaresLLMTask:
     def __init__(self, audio_encoder: Callable, train_config: XaresLLMTrainConfig):
         self.audio_encoder = audio_encoder
         self.train_config = train_config
-        self.output_dir = Path(train_config.output_dir) / train_config.config_name / audio_encoder.__class__.__name__
+        current_time_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.output_dir = Path(train_config.output_dir) / train_config.config_name / audio_encoder.__class__.__name__ / current_time_str
+        logger.add(
+                self.output_dir / "log.txt",
+                enqueue=True,
+                level="INFO",
+                format="[{level} {time:YYYY-MM-DD HH:mm:ss}] {message}",
+            )
         logger.info(f"Experiment output path set to {self.output_dir}")
         logger.info(f"Loading {train_config.decoder_model_name} tokenizer")
         self.tokenizer = AutoTokenizer.from_pretrained(train_config.decoder_model_name)
         training_args = TrainingArguments(
             output_dir=str(self.output_dir),
-            learning_rate=self.train_config.learining_rate, 
+            learning_rate=self.train_config.learning_rate, 
             per_device_train_batch_size=self.train_config.per_device_train_batch_size,
             save_total_limit=self.train_config.save_total_limit,
             save_steps=self.train_config.save_steps,
             warmup_steps=self.train_config.warmup_steps,
-            logging_steps=10,
+            max_grad_norm=self.train_config.max_grad_norm,
             max_steps=self.train_config.max_steps,
             optim=self.train_config.optimizer,
             weight_decay=self.train_config.weight_decay,
             seed=self.train_config.seed,
             save_safetensors=False,
+            logging_steps= self.train_config.logging_steps,
             torch_compile=self.train_config.torch_compile,
             bf16=self.train_config.bf16,
             fp16=self.train_config.fp16,
@@ -224,7 +231,7 @@ class XaresLLMTask:
             data_urls=self.train_config.train_data,
             tokenizer=self.tokenizer,
             training=True,
-            batch_size=self.train_config.batch_size_train,
+            batch_size=self.train_config.per_device_train_batch_size,
             resample=True,
             sort_by_length=self.train_config.sort_by_length,
             num_workers=self.train_config.num_training_workers,

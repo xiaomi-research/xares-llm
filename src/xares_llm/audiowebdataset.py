@@ -519,7 +519,7 @@ class AudioTextTokenWebdataset:
                 sort_by_length(
                     bufsize=self.sort_by_length,
                     reverse=True,
-                    sort_function=lambda item: len(item["input_ids"]),
+                    sort_function=lambda item: len(item["input_ids"]) + item['audio'].shape[-1]/ 16000, # Seconds + number of text tokens
                 )
             )
         collate_fn = collate_fn or self._default_collate_fn

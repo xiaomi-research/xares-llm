@@ -16,6 +16,7 @@ class WhisperEncoder(torch.nn.Module):
         self.output_dim = self.model.config.d_model
 
     def forward(self, audio: torch.Tensor, audio_attention_mask=None) -> tuple[torch.Tensor, torch.Tensor]:
+        # Since feature extraction is on cpu this is super slow
         assert isinstance(audio, torch.Tensor)
         audio = audio.cpu().numpy()
         if audio.ndim == 1:
