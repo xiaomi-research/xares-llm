@@ -15,6 +15,7 @@
 import torch
 import torch.nn as nn
 from transformers import AutoModelForCausalLM, PreTrainedModel
+from transformers.loss.loss_utils import ForCausalLMLoss
 from peft import get_peft_model, LoraConfig, TaskType
 from .configuration_xaresllm import XaresLLMModelConfig
 
@@ -41,21 +42,20 @@ class XaresLLMModel(PreTrainedModel, nn.Module):
                 bias = "none",
             )
         self.decoder = get_peft_model(decoder, peft_config)
+        self.decoder.print_trainable_parameters()
+
         self.audio_projector = nn.Linear(self.audio_encoder.output_dim, self.decoder.config.hidden_size)
 
     @property
     def device(self):
-        return list(self.parameters())[0].device
+        return next(self.parameters()).device
 
     def _prepare_multimodal_inputs(self, audio, audio_attention_mask, input_ids, attention_mask, labels):
-        inputs_to_device = [audio, audio_attention_mask, input_ids, attention_mask, labels]
-        audio, audio_attention_mask, input_ids, attention_mask, labels = (
-                t.to(self.device) for t in inputs_to_device
-                )
+        device = audio.device 
         mel_attention_mask = None
         with torch.no_grad():
             audio_feature, mel_attention_mask = self.audio_encoder(audio, audio_attention_mask)
-            audio_feature = audio_feature.to(self.device)  # returned tensor might be on cpu
+            audio_feature = audio_feature.to(device)  # returned tensor might be on cpu
         audio_feature = self.audio_projector(audio_feature)
         if mel_attention_mask is None:
             mel_attention_mask = torch.ones(*audio_feature.shape[:2], device=attention_mask.device)
@@ -77,6 +77,7 @@ class XaresLLMModel(PreTrainedModel, nn.Module):
     def forward(self, audio, audio_attention_mask, input_ids, attention_mask, labels, **kwargs):
         input_embeds, attention_mask, labels = self._prepare_multimodal_inputs(audio, audio_attention_mask,input_ids, attention_mask, labels)
         return self.decoder(input_ids=None, inputs_embeds=input_embeds, labels=labels, attention_mask=attention_mask)
+
 
     @torch.no_grad()
     def generate(self, audio, audio_attention_mask, input_ids, attention_mask, labels, **gen_kwargs):

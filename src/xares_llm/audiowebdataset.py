@@ -328,23 +328,18 @@ def _process_sample_stream(
             prompt_inputs = tokenizer(sample_prompt)
 
             if tokenizer_eos_token:
-                text = text + tokenizer_eos_token
-            # 4. Text Tokenization and Filtering By tokens
+                text = text + tokenizer.eos_token
             text_inputs = tokenizer(text)  # Textinputs is a List[int]
+            # 4. Text Tokenization and Filtering By tokens
             if exists(max_text_token_length) and len(text_inputs["input_ids"]) > max_text_token_length:
                 logger.warning(
                     f"Dropped sample {data_sample.get('filename', 'unknown')} in {tarname} (max token text length)"
                 )
                 continue
 
-            if tokenizer_eos_token:
-                labels = [
-                    -100 if token_id == tokenizer.eos_token_id else token_id for token_id in text_inputs["input_ids"]
-                ]
-            else:
-                labels = text_inputs["input_ids"]
+            labels = text_inputs["input_ids"]
 
-            # promp_inputs is List[int]
+            # prompt_inputs is List[int]
             prompt_targets = [-100 for _ in prompt_inputs["input_ids"]]
             labels = prompt_targets + labels
             input_ids = prompt_inputs["input_ids"] + text_inputs["input_ids"]
@@ -425,7 +420,8 @@ def create_audio_text_token_pipeline(
             ),
         ]
     )
-    tokenizer_eos_token = tokenizer.eos_token if hasattr(tokenizer, "eos_token") else None
+
+    tokenizer_eos_token = tokenizer.eos_token if (hasattr(tokenizer, "eos_token") and training) else None # Dont need to estimate EOS token during inference
     pipeline.append(
         partial(
             _process_sample_stream, tokenizer=tokenizer, tokenizer_eos_token=tokenizer_eos_token, **filtering_kwargs
