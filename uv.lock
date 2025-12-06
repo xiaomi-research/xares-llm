@@ -751,6 +751,28 @@ wheels = [
 ]
 
 [[package]]
+name = "peft"
+version = "0.18.0"
+source = { registry = "https://mirrors.sustech.edu.cn/pypi/web/simple" }
+dependencies = [
+    { name = "accelerate" },
+    { name = "huggingface-hub" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://mirrors.sustech.edu.cn/pypi/web/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.3.4", source = { registry = "https://mirrors.sustech.edu.cn/pypi/web/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "packaging" },
+    { name = "psutil" },
+    { name = "pyyaml" },
+    { name = "safetensors" },
+    { name = "torch" },
+    { name = "tqdm" },
+    { name = "transformers" },
+]
+sdist = { url = "https://mirrors.sustech.edu.cn/pypi/web/packages/4b/0c/f2938db546ac7fc961ab5917cd50fcf5d0d70b406de93e3faccaa504e152/peft-0.18.0.tar.gz", hash = "sha256:c81c80b2056ab40c23d58ef25f74daab417ac653970718589a11a8af28218588" }
+wheels = [
+    { url = "https://mirrors.sustech.edu.cn/pypi/web/packages/0f/55/481bf25613d40ef53534f664deba7b138fe566356b6ca10304e2b3b2529c/peft-0.18.0-py3-none-any.whl", hash = "sha256:624f69ca6393b765ccc6734adda7ca57d80b238f0900a42c357d8b67a03d62ff" },
+]
+
+[[package]]
 name = "psutil"
 version = "7.1.1"
 source = { registry = "https://mirrors.sustech.edu.cn/pypi/web/simple" }
@@ -1573,7 +1595,7 @@ wheels = [
 
 [[package]]
 name = "xares-llm"
-version = "0.0.3"
+version = "0.0.4"
 source = { editable = "." }
 dependencies = [
     { name = "accelerate" },
@@ -1582,6 +1604,7 @@ dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://mirrors.sustech.edu.cn/pypi/web/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.3.4", source = { registry = "https://mirrors.sustech.edu.cn/pypi/web/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pandas" },
+    { name = "peft" },
     { name = "scikit-learn" },
     { name = "torch" },
     { name = "torchaudio" },
@@ -1599,6 +1622,7 @@ requires-dist = [
     { name = "loguru" },
     { name = "numpy" },
     { name = "pandas", specifier = ">=2.2.3" },
+    { name = "peft", specifier = ">=0.18.0" },
     { name = "scikit-learn" },
     { name = "torch", specifier = ">=2.2.1" },
     { name = "torchaudio", specifier = ">=2.2.1" },

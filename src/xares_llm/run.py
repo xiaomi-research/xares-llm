@@ -27,26 +27,17 @@ from xares_llm.task import (
     AVAILABLE_EVALUATION_CONFIGS,
     AVAILABLE_TRAINING_CONFIGS,
 )
-from xares_llm.utils import attr_from_py_path, attr_from_module
-from xares_llm.audio_encoder_checker import check_audio_encoder
 
 
 # Mappings from config.yaml -> Path to the config. By default we store most configs in the package tree, but users can also provide their own
 
 
 def main(args):
-    if Path(args.encoder_path).is_file():
-        audio_encoder = attr_from_py_path(args.encoder_path, endswith="Encoder")(**args.model_args)
-    else:
-        audio_encoder = attr_from_module(args.encoder_path)(**args.model_args)
-    try:
-        check_audio_encoder(audio_encoder)
-    except Exception as e:
-        logger.exception(e)
-        return  # Error is raised inside
+    train_config = XaresLLMTrainConfig.from_file_or_key(args.train_config, args.encoder_path, **args.model_args)
+    eval_configs = XaresLLMEvaluationConfig.configs_from_file_or_key(args.eval_configs)
 
-    logger.info(f"Training with Train config \n{args.train_config}\n Eval config: {args.eval_configs}")
-    runner = XaresLLMTask(audio_encoder=audio_encoder, train_config=args.train_config)
+    logger.info(f"Training with Train config \n{train_config}\n Eval config: {eval_configs}")
+    runner = XaresLLMTask(args.train_config)
     scores: List[Dict[str, Any]] = runner.run(args.eval_configs)
 
     logger.info("Scoring completed: All tasks scored.")
@@ -73,14 +64,14 @@ if __name__ == "__main__":
     parser.add_argument("encoder_path", type=str, help="Encoder path. e.g.: example/dummy/dummyencoder.py or path to the module (including class) e.g., example.dummy.dummyencoder.DummyEncoder")
     parser.add_argument(
         "train_config",
-        type=XaresLLMTrainConfig.from_file_or_key,
+        type=str,
         help=f"Tasks .yaml or predefined dataset. Datasets are: {list(AVAILABLE_TRAINING_CONFIGS.keys())}",
         nargs = "?",
         default='all',
     )
     parser.add_argument(
         "eval_configs",
-        type=XaresLLMEvaluationConfig.configs_from_file_or_key,
+        type=str,
         nargs = "?",
         help=f"Evaluation Task .yaml. One Yaml can specify multiple datasets. By default we use the XARES-LLM datasets. Datasets are : {list(AVAILABLE_EVALUATION_CONFIGS.keys())} ",
         default='all',

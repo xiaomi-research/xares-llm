@@ -56,6 +56,8 @@ python3 -m xares_llm.run example/dummy/dummyencoder.py clotho clotho
 # Or for the Module interface
 # python3 -m xares_llm.run example.dummy.dummyencoder.DummyEncoder clotho clotho
 
+# Using Multiple GPU's with Accelerate:
+# accelerate launch -m xares_llm.run example/dummy/dummyencoder.py clotho clotho
 ```
 
 
