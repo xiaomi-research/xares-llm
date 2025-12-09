@@ -33,7 +33,7 @@ from xares_llm.task import (
 
 
 def main(args):
-    train_config = XaresLLMTrainConfig.from_file_or_key(args.train_config, args.encoder_path, **args.model_args)
+    train_config = XaresLLMTrainConfig.from_file_or_key(args.train_config, encoder_path=args.encoder_path, model_kwargs=args.model_args, overwrite_kwargs=args.args)
     eval_configs = XaresLLMEvaluationConfig.configs_from_file_or_key(args.eval_configs)
 
     logger.info(f"Training with Train config \n{train_config}\n Eval config: {eval_configs}")
@@ -80,6 +80,12 @@ if __name__ == "__main__":
         "--model_args",
         type=lambda arg: json.loads(arg),
         help="Additional args passed to the encoder model. Format is JSON like: --model_args {'my_paramter1':2, 'my_paramter2':30}",
+        default={},
+    )
+    parser.add_argument(
+        "--args",
+        type=lambda arg: json.loads(arg),
+        help="Additional training args. Format is JSON like: --args {'per_device_train_batch_size':16, 'save_steps':30}",
         default={},
     )
     args = parser.parse_args()

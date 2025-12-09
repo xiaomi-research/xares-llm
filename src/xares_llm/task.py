@@ -114,21 +114,26 @@ class XaresLLMTrainConfig:
         return pprint.pformat(asdict(self))
 
     @classmethod
-    def from_file(cls, config_file: str, encoder_path:str, **model_kwargs) -> XaresLLMTrainConfig:
+    def from_file(cls, config_file: str, encoder_path:str, model_kwargs:Dict[str, Any] | None = None, overwrite_kwargs:Dict[str, Any] | None = None) -> XaresLLMTrainConfig:
         with open(config_file) as con_read:
             yaml_config = yaml.load(con_read, Loader=yaml.FullLoader)
         yaml_config["config_name"] = Path(config_file).stem
         yaml_config['audio_encoder_module_path'] = encoder_path
+        if model_kwargs is None:
+            model_kwargs = dict()
         yaml_config['audio_encoder_kwargs'] = model_kwargs
+        if overwrite_kwargs is None:
+            overwrite_kwargs = dict()
+        yaml_config = dict(**yaml_config, **overwrite_kwargs)
         return cls(**yaml_config)
 
     @classmethod
-    def from_file_or_key(cls, config_identifier: str, encoder_path:str, **model_kwargs) -> XaresLLMTrainConfig:
+    def from_file_or_key(cls, config_identifier: str, encoder_path:str, model_kwargs:Dict[str,Any] | None = None, overwrite_kwargs:Dict[str, Any] | None = None) -> XaresLLMTrainConfig:
         if config_identifier in AVAILABLE_TRAINING_CONFIGS:
-            return cls.from_file(AVAILABLE_TRAINING_CONFIGS[config_identifier], encoder_path=encoder_path, **model_kwargs)
+            return cls.from_file(AVAILABLE_TRAINING_CONFIGS[config_identifier], encoder_path=encoder_path, model_kwargs=model_kwargs, overwrite_kwargs=overwrite_kwargs)
         path_obj = Path(config_identifier)
         if path_obj.is_file():
-            return cls.from_file(config_identifier, encoder_path=encoder_path, **model_kwargs)
+            return cls.from_file(config_identifier, encoder_path=encoder_path, model_kwargs=model_kwargs, overwrite_kwargs=overwrite_kwargs)
         raise ValueError(f"Unknown config identifier {config_identifier}")
 
 
