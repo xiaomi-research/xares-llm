@@ -1,5 +1,6 @@
 import torch
 
+
 class DummyEncoder(torch.nn.Module):
     def __init__(self, **kwargs) -> None:
         super().__init__()

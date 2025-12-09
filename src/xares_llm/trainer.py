@@ -18,8 +18,7 @@ from xares_llm.audiowebdataset import AudioTextTokenWebdataset
 
 
 class LoguruMetricsCallback(ProgressCallback):
-
-    def on_log(self, args, state, control, logs = None, **kwargs):
+    def on_log(self, args, state, control, logs=None, **kwargs):
         if state.is_world_process_zero:
             shallow_logs = {}
             for k, v in logs.items():
@@ -30,6 +29,7 @@ class LoguruMetricsCallback(ProgressCallback):
             _ = shallow_logs.pop("total_flos", None)
             log = ", ".join([f"{key} = {value}" for key, value in shallow_logs.items()])
             logger.info(str(log))
+
 
 class XaresLLMTrainerEvaluator(Trainer):
     def __init__(self, *args, **kwargs):
@@ -48,6 +48,6 @@ class XaresLLMTrainerEvaluator(Trainer):
 
     def prediction_step(self, model, inputs, prediction_loss_only, ignore_keys=None):
         generated_ids = model.generate(**inputs, repetition_penalty=1.05, max_new_tokens=150)
-        labels = inputs.get('labels')
+        labels = inputs.get("labels")
         logger.debug(f"Predicted {generated_ids.shape}, Labels: {labels.shape}")
         return (None, generated_ids, labels)

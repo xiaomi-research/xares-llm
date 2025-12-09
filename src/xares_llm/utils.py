@@ -52,7 +52,8 @@ def attr_from_py_path(path: str, endswith: str | None = None) -> type:
 def seed_everything(seed: int = 42, deterministic: bool = True) -> int:
     logger.debug(f"Setting global seed to {seed}...")
     import os
-    os.environ['PYTHONHASHSEED'] = str(seed)
+
+    os.environ["PYTHONHASHSEED"] = str(seed)
 
     random.seed(seed)
     np.random.seed(seed)

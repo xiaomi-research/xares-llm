@@ -21,8 +21,8 @@ class XaresLLMModelConfig(PretrainedConfig):
 
     def __init__(
         self,
-        audio_encoder_name: str |None = None,
-        audio_encoder_params: Dict[str,Any] = {},
+        audio_encoder_name: str | None = None,
+        audio_encoder_params: Dict[str, Any] = {},
         decoder_type: str = "gpt2",
         **kwargs,
     ):

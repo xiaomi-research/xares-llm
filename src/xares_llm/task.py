@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-
 from __future__ import annotations
 
 
@@ -36,12 +35,18 @@ import pprint
 
 # Mappings from config.yaml -> Path to the config. By default we store most configs in the package tree, but users can also provide their own
 AVAILABLE_TRAINING_CONFIGS = {
-    "all": _ for _ in importlib.resources.files("xares_llm.tasks.all.train").iterdir()
+    "all": next(importlib.resources.files("xares_llm.tasks.all.train").iterdir()),
+    "task1": next(importlib.resources.files("xares_llm.tasks.task1.train").iterdir()),
+    "task2": next(importlib.resources.files("xares_llm.tasks.task2.train").iterdir()),
 } | {
     str(Path(_).stem).replace("_config", ""): _
     for _ in importlib.resources.files("xares_llm.tasks.single.train").iterdir()
 }
-AVAILABLE_EVALUATION_CONFIGS = {"all": _ for _ in importlib.resources.files("xares_llm.tasks.all.eval").iterdir()} | {
+AVAILABLE_EVALUATION_CONFIGS = {
+    "all": next(importlib.resources.files("xares_llm.tasks.all.eval").iterdir()),
+    "task1": next(importlib.resources.files("xares_llm.tasks.task1.eval").iterdir()),
+    "task2": next(importlib.resources.files("xares_llm.tasks.task2.eval").iterdir()),
+} | {
     str(Path(_).stem).replace("_test_config", ""): _
     for _ in importlib.resources.files("xares_llm.tasks.single.eval").iterdir()
 }
@@ -50,7 +55,7 @@ AVAILABLE_EVALUATION_CONFIGS = {"all": _ for _ in importlib.resources.files("xar
 @dataclass
 class XaresLLMTrainConfig:
     audio_encoder_module_path: str  # path to the audio encoder
-    audio_encoder_kwargs: Dict[str,Any] = field(default_factory=lambda: dict())
+    audio_encoder_kwargs: Dict[str, Any] = field(default_factory=lambda: dict())
     output_dir: str = "experiments/"
     config_name: str = "default"  # Will be set if loaded from a .yaml
 
@@ -114,26 +119,48 @@ class XaresLLMTrainConfig:
         return pprint.pformat(asdict(self))
 
     @classmethod
-    def from_file(cls, config_file: str, encoder_path:str, model_kwargs:Dict[str, Any] | None = None, overwrite_kwargs:Dict[str, Any] | None = None) -> XaresLLMTrainConfig:
+    def from_file(
+        cls,
+        config_file: str,
+        encoder_path: str,
+        model_kwargs: Dict[str, Any] | None = None,
+        overwrite_kwargs: Dict[str, Any] | None = None,
+    ) -> XaresLLMTrainConfig:
         with open(config_file) as con_read:
             yaml_config = yaml.load(con_read, Loader=yaml.FullLoader)
         yaml_config["config_name"] = Path(config_file).stem
-        yaml_config['audio_encoder_module_path'] = encoder_path
+        yaml_config["audio_encoder_module_path"] = encoder_path
         if model_kwargs is None:
             model_kwargs = dict()
-        yaml_config['audio_encoder_kwargs'] = model_kwargs
+        yaml_config["audio_encoder_kwargs"] = model_kwargs
         if overwrite_kwargs is None:
             overwrite_kwargs = dict()
         yaml_config = dict(**yaml_config, **overwrite_kwargs)
         return cls(**yaml_config)
 
     @classmethod
-    def from_file_or_key(cls, config_identifier: str, encoder_path:str, model_kwargs:Dict[str,Any] | None = None, overwrite_kwargs:Dict[str, Any] | None = None) -> XaresLLMTrainConfig:
+    def from_file_or_key(
+        cls,
+        config_identifier: str,
+        encoder_path: str,
+        model_kwargs: Dict[str, Any] | None = None,
+        overwrite_kwargs: Dict[str, Any] | None = None,
+    ) -> XaresLLMTrainConfig:
         if config_identifier in AVAILABLE_TRAINING_CONFIGS:
-            return cls.from_file(AVAILABLE_TRAINING_CONFIGS[config_identifier], encoder_path=encoder_path, model_kwargs=model_kwargs, overwrite_kwargs=overwrite_kwargs)
+            return cls.from_file(
+                AVAILABLE_TRAINING_CONFIGS[config_identifier],
+                encoder_path=encoder_path,
+                model_kwargs=model_kwargs,
+                overwrite_kwargs=overwrite_kwargs,
+            )
         path_obj = Path(config_identifier)
         if path_obj.is_file():
-            return cls.from_file(config_identifier, encoder_path=encoder_path, model_kwargs=model_kwargs, overwrite_kwargs=overwrite_kwargs)
+            return cls.from_file(
+                config_identifier,
+                encoder_path=encoder_path,
+                model_kwargs=model_kwargs,
+                overwrite_kwargs=overwrite_kwargs,
+            )
         raise ValueError(f"Unknown config identifier {config_identifier}")
 
 
@@ -183,40 +210,44 @@ class XaresLLMTask:
         if Path(self.train_config.audio_encoder_module_path).is_file():
             model_name = str(Path(self.train_config.audio_encoder_module_path).stem)
         else:
-            model_name = self.train_config.audio_encoder_module_path.split('.')[-1]
-        self.output_dir = Path(train_config.output_dir) / train_config.config_name / model_name 
+            model_name = self.train_config.audio_encoder_module_path.split(".")[-1]
+        self.output_dir = Path(train_config.output_dir) / train_config.config_name / model_name
         logger.add(
-                self.output_dir / "log.txt",
-                enqueue=True,
-                level="INFO",
-                format="[{level} {time:YYYY-MM-DD HH:mm:ss}] {message}",
-            )
+            self.output_dir / "log.txt",
+            enqueue=True,
+            level="INFO",
+            format="[{level} {time:YYYY-MM-DD HH:mm:ss}] {message}",
+        )
         logger.info(f"Experiment output path set to {self.output_dir}")
         logger.info(f"Loading {train_config.decoder_model_name} tokenizer")
         self.tokenizer = AutoTokenizer.from_pretrained(train_config.decoder_model_name)
         training_args = TrainingArguments(
             output_dir=str(self.output_dir),
-            learning_rate=self.train_config.learning_rate, 
+            learning_rate=self.train_config.learning_rate,
             per_device_train_batch_size=self.train_config.per_device_train_batch_size,
             save_total_limit=self.train_config.save_total_limit,
             save_steps=self.train_config.save_steps,
-            lr_scheduler_type='cosine',
+            lr_scheduler_type="cosine",
             warmup_steps=self.train_config.warmup_steps,
             max_grad_norm=self.train_config.max_grad_norm,
             max_steps=self.train_config.max_steps,
             optim=self.train_config.optimizer,
             weight_decay=self.train_config.weight_decay,
             seed=self.train_config.seed,
-            logging_steps= self.train_config.logging_steps,
+            logging_steps=self.train_config.logging_steps,
             torch_compile=self.train_config.torch_compile,
             bf16=self.train_config.bf16,
             fp16=self.train_config.fp16,
             logging_dir=Path(self.output_dir) / self.train_config.logging_dir,
         )
         # Lazy init, during .train() or .eval()
-        model_init_function = lambda : XaresLLMModel(
-                config=XaresLLMModelConfig(decoder_type=self.train_config.decoder_model_name, audio_encoder_name=self.train_config.audio_encoder_module_path, audio_encoder_params=self.train_config.audio_encoder_kwargs),
-            )
+        model_init_function = lambda: XaresLLMModel(
+            config=XaresLLMModelConfig(
+                decoder_type=self.train_config.decoder_model_name,
+                audio_encoder_name=self.train_config.audio_encoder_module_path,
+                audio_encoder_params=self.train_config.audio_encoder_kwargs,
+            ),
+        )
         self.trainer = XaresLLMTrainerEvaluator(model=None, model_init=model_init_function, args=training_args)
 
     def run_mlp(self, eval_configs: List[XaresLLMEvaluationConfig]) -> List[Dict[str, Any]]:
@@ -230,8 +261,8 @@ class XaresLLMTask:
             score, output_df = self.evaluate_mlp(trained_model=model, eval_config=eval_config)
             logger.info(f"{dataset_name}: [{eval_config.metric}]: {score:.2f}")
             result.append({"Task": dataset_name, "score": score, "weight": eval_config.weight})
-            output_df.to_csv(self.output_dir / f'predictions_{dataset_name}.csv', index=False)
-            logger.debug(f"Model outputs can be seen in {self.output_dir / f'predictions_{dataset_name}.csv'}" )
+            output_df.to_csv(self.output_dir / f"predictions_{dataset_name}.csv", index=False)
+            logger.debug(f"Model outputs can be seen in {self.output_dir / f'predictions_{dataset_name}.csv'}")
         return result
 
     def train_mlp(self) -> XaresLLMModel:
@@ -273,19 +304,19 @@ class XaresLLMTask:
             tokenizer=self.tokenizer,
             training=False,
             batch_size=eval_config.batch_size,
-            sort_by_length=256, # just to speed up a bit
+            sort_by_length=256,  # just to speed up a bit
             num_workers=eval_config.num_workers,
         )
         # remove LoRA to speed up inference
         self.trainer.compute_metrics = metrics_compute_function
 
-        result = self.trainer.predict(test_dataset = data_object_eval)
+        result = self.trainer.predict(test_dataset=data_object_eval)
 
         decoder = TokenDecoder(self.tokenizer)
         prediced_text, targets = decoder.decode_predictions(result)
 
-        prediction_df = pd.DataFrame({'predict':prediced_text, 'labels':targets})
-        return result.metrics[f'test_{eval_config.metric}'], prediction_df
+        prediction_df = pd.DataFrame({"predict": prediced_text, "labels": targets})
+        return result.metrics[f"test_{eval_config.metric}"], prediction_df
 
     def run(self, eval_configs: List[XaresLLMEvaluationConfig]):
         scores = self.run_mlp(eval_configs=eval_configs)

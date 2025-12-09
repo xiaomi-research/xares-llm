@@ -5,6 +5,6 @@ eval_asvspoof2015:
     key: binary_spoof
     prompt: Detect if the audio is genuine or a spoof.
     repo_id: mispeech/xares_llm_data
-  batch_size: 4
+  batch_size: 128
   num_workers: 0
   metric: Accuracy

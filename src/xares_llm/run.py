@@ -29,11 +29,12 @@ from xares_llm.task import (
 )
 
 
-# Mappings from config.yaml -> Path to the config. By default we store most configs in the package tree, but users can also provide their own
 
 
 def main(args):
-    train_config = XaresLLMTrainConfig.from_file_or_key(args.train_config, encoder_path=args.encoder_path, model_kwargs=args.model_args, overwrite_kwargs=args.args)
+    train_config = XaresLLMTrainConfig.from_file_or_key(
+        args.train_config, encoder_path=args.encoder_path, model_kwargs=args.model_args, overwrite_kwargs=args.args
+    )
     eval_configs = XaresLLMEvaluationConfig.configs_from_file_or_key(args.eval_configs)
 
     logger.info(f"Training with Train config \n{train_config}\n Eval config: {eval_configs}")
@@ -47,11 +48,13 @@ def main(args):
     df.sort_values(by="Task", inplace=True)
 
     new_row = pd.DataFrame(
-        [{
-            "Task": "Overall",
-            "score": (df["score"] * df["weight"]).sum() / df["weight"].sum(),
-            "weight": df["weight"].sum(),
-        }]
+        [
+            {
+                "Task": "Overall",
+                "score": (df["score"] * df["weight"]).sum() / df["weight"].sum(),
+                "weight": df["weight"].sum(),
+            }
+        ]
     )
     df = pd.concat((df, new_row), ignore_index=True)
     logger.info(f"\nResults:\n{df.to_string(index=False)}")
@@ -61,20 +64,24 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run XARES-LLM")
-    parser.add_argument("encoder_path", type=str, help="Encoder path. e.g.: example/dummy/dummyencoder.py or path to the module (including class) e.g., example.dummy.dummyencoder.DummyEncoder")
+    parser.add_argument(
+        "encoder_path",
+        type=str,
+        help="Encoder path. e.g.: example/dummy/dummyencoder.py or path to the module (including class) e.g., example.dummy.dummyencoder.DummyEncoder",
+    )
     parser.add_argument(
         "train_config",
         type=str,
         help=f"Tasks .yaml or predefined dataset. Datasets are: {list(AVAILABLE_TRAINING_CONFIGS.keys())}",
-        nargs = "?",
-        default='all',
+        nargs="?",
+        default="all",
     )
     parser.add_argument(
         "eval_configs",
         type=str,
-        nargs = "?",
+        nargs="?",
         help=f"Evaluation Task .yaml. One Yaml can specify multiple datasets. By default we use the XARES-LLM datasets. Datasets are : {list(AVAILABLE_EVALUATION_CONFIGS.keys())} ",
-        default='all',
+        default="all",
     )
     parser.add_argument(
         "--model_args",

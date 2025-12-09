@@ -27,6 +27,19 @@ Or pass the module directly:
 python3 -m xares_llm.run example.dummy.dummyencoder.DummyEncoder
 ```
 
+### Task 1 ( Classification )
+
+
+```bash
+python3 -m xares_llm.run example/dummy/dummyencoder.py task1 task1
+```
+
+### Task 2 ( Generation )
+
+```bash
+python3 -m xares_llm.run example/dummy/dummyencoder.py task2 task2
+```
+
 
 ### Encoder example
 
@@ -101,3 +114,17 @@ One can modify the data path with the environment variable `XARES_DATA_HOME`.
 
 
 
+## Manual Downloading the data
+
+The data is stored in `$XARES_DATA_HOME`, which defaults to `$pwd/xares_data`.
+
+```python
+python3 -m xares_llm.download_data --data all
+# python3 -m xares_llm.download_data --data task1
+# python3 -m xares_llm.download_data --data task2
+```
+
+The download location can also be changed:
+```python
+# python3 -m xares_llm.download_data --data task1 --cache_dir /tmp/mycache
+```

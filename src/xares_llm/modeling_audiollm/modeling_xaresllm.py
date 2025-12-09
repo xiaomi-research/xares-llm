@@ -31,14 +31,16 @@ class XaresLLMModel(PreTrainedModel, nn.Module):
         super().__init__(config)
         self.config = config
         if Path(self.config.audio_encoder_name).is_file():
-            audio_encoder = attr_from_py_path(self.config.audio_encoder_name, endswith="Encoder")(**self.config.audio_encoder_params)
+            audio_encoder = attr_from_py_path(self.config.audio_encoder_name, endswith="Encoder")(
+                **self.config.audio_encoder_params
+            )
         else:
             audio_encoder = attr_from_module(self.config.audio_encoder_name)(**self.config.audio_encoder_params)
         try:
             audio_encoder_parameters = list(audio_encoder.parameters())
             if len(audio_encoder_parameters) > 0:
                 device_type = audio_encoder_parameters[0].device.type
-                if device_type != 'meta': # When using .from_pretrained, device is meta
+                if device_type != "meta":  # When using .from_pretrained, device is meta
                     check_audio_encoder(audio_encoder)
         except Exception as e:
             logger.exception(e)
@@ -50,14 +52,14 @@ class XaresLLMModel(PreTrainedModel, nn.Module):
 
         decoder = AutoModelForCausalLM.from_pretrained(config.decoder_type)
         peft_config = LoraConfig(
-                target_modules='all-linear',
-                task_type=TaskType.CAUSAL_LM,
-                inference_mode=False,
-                r=8,
-                lora_alpha=32,
-                lora_dropout=0.1,
-                bias = "none",
-            )
+            target_modules="all-linear",
+            task_type=TaskType.CAUSAL_LM,
+            inference_mode=False,
+            r=8,
+            lora_alpha=32,
+            lora_dropout=0.1,
+            bias="none",
+        )
         self.decoder = get_peft_model(decoder, peft_config)
         self.decoder.print_trainable_parameters()
 
@@ -70,7 +72,7 @@ class XaresLLMModel(PreTrainedModel, nn.Module):
     def device(self):
         return next(self.parameters()).device
 
-    def _prepare_multimodal_inputs(self, audio, audio_attention_mask, input_ids, attention_mask, labels = None):
+    def _prepare_multimodal_inputs(self, audio, audio_attention_mask, input_ids, attention_mask, labels=None):
         audio = audio.to(self.device)
         audio_attention_mask = audio_attention_mask.to(self.device)
         input_ids = input_ids.to(self.device)
@@ -96,18 +98,23 @@ class XaresLLMModel(PreTrainedModel, nn.Module):
             labels = torch.cat((zero_audio_targets, labels), dim=1)
         else:
             labels = None
-        attention_mask = torch.cat((mel_attention_mask, attention_mask),
+        attention_mask = torch.cat(
+            (mel_attention_mask, attention_mask),
             dim=1,
         )
         return input_embeds, attention_mask, labels
 
-
     def forward(self, audio, audio_attention_mask, input_ids, attention_mask, labels, **kwargs):
-        input_embeds, attention_mask, labels = self._prepare_multimodal_inputs(audio, audio_attention_mask,input_ids, attention_mask, labels)
+        input_embeds, attention_mask, labels = self._prepare_multimodal_inputs(
+            audio, audio_attention_mask, input_ids, attention_mask, labels
+        )
         return self.decoder(input_ids=None, inputs_embeds=input_embeds, labels=labels, attention_mask=attention_mask)
-
 
     @torch.no_grad()
     def generate(self, audio, audio_attention_mask, input_ids, attention_mask, **gen_kwargs):
-        input_embeds, attention_mask, _ = self._prepare_multimodal_inputs(audio, audio_attention_mask,input_ids, attention_mask, labels=None)
-        return self.decoder.generate(input_ids=None, inputs_embeds=input_embeds, attention_mask=attention_mask, **gen_kwargs)
+        input_embeds, attention_mask, _ = self._prepare_multimodal_inputs(
+            audio, audio_attention_mask, input_ids, attention_mask, labels=None
+        )
+        return self.decoder.generate(
+            input_ids=None, inputs_embeds=input_embeds, attention_mask=attention_mask, **gen_kwargs
+        )

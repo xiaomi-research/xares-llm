@@ -31,6 +31,7 @@ def preprocess_string(text: str):
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
+
 def average_precision_score_with_string(
     y_true: List[str], y_pred: List[str], num_classes: int, separator: str = ";", **kwargs
 ):
@@ -100,7 +101,7 @@ class iWER:
     def __call__(self, pred: EvalPrediction):
         preds, targets = self.tokendecoder.decode_predictions(pred)
         wer_score = wer(list(map(preprocess_string, targets)), list(map(preprocess_string, preds)))
-        return {'iWER': max(0, 1. - wer_score)} 
+        return {"iWER": max(0, 1.0 - wer_score)}
 
 
 @MetricRegistry.register
@@ -112,7 +113,7 @@ class iCER:
     def __call__(self, pred: EvalPrediction):
         preds, targets = self.tokendecoder.decode_predictions(pred)
         cer_score = cer(list(map(preprocess_string, targets)), list(map(preprocess_string, preds)))
-        return {'iCER': max(0, 1. - cer_score)} 
+        return {"iCER": max(0, 1.0 - cer_score)}
 
 
 @MetricRegistry.register
@@ -125,13 +126,12 @@ class Accuracy:
         preds, targets = self.tokendecoder.decode_predictions(pred)
         preds = list(map(preprocess_string, preds))
         targets = list(map(preprocess_string, targets))
-        return {"Accuracy": accuracy_score(targets, preds)} # scikit supports strings 
-
+        return {"Accuracy": accuracy_score(targets, preds)}  # scikit supports strings
 
 
 @MetricRegistry.register
 class mAP:
-    def __init__(self, tokenizer, num_classes:int, separator:str = ';', **kwargs):
+    def __init__(self, tokenizer, num_classes: int, separator: str = ";", **kwargs):
         self.tokendecoder = TokenDecoder(tokenizer)
         self.num_classes = num_classes
         self.separator = separator
@@ -141,10 +141,33 @@ class mAP:
         preds, targets = self.tokendecoder.decode_predictions(pred)
         preds = list(map(preprocess_string, preds))
         targets = list(map(preprocess_string, targets))
-        return {"mAP": average_precision_score_with_string(targets, preds, num_classes=self.num_classes, separator=self.separator)} # scikit supports strings 
+        return {
+            "mAP": average_precision_score_with_string(
+                targets, preds, num_classes=self.num_classes, separator=self.separator
+            )
+        }  # scikit supports strings
+
+
+@MetricRegistry.register
+class FENSE:
+    def __init__(self, tokenizer, num_classes: int, separator: str = ";", **kwargs):
+        self.tokendecoder = TokenDecoder(tokenizer)
+        self.num_classes = num_classes
+        self.separator = separator
+        super().__init__(**kwargs)
+
+    def __call__(self, pred: EvalPrediction):
+        preds, targets = self.tokendecoder.decode_predictions(pred)
+        preds = list(map(preprocess_string, preds))
+        targets = list(map(preprocess_string, targets))
+        return {
+            "mAP": average_precision_score_with_string(
+                targets, preds, num_classes=self.num_classes, separator=self.separator
+            )
+        }  # scikit supports strings
+
 
 RegisteredMetricsLiteral = MetricRegistry.get_registered_names()
-
 
 def get_metric(name: RegisteredMetricsLiteral, **metric_kw) -> RegisteredMetricsLiteral:
     return MetricRegistry.create(name, **metric_kw)

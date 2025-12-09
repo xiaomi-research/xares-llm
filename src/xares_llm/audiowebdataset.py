@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-
 from typing import Any, Callable, Dict, Iterable, List, Tuple
 import webdataset as wds
 from webdataset.tariterators import tar_file_expander, group_by_keys
@@ -55,7 +54,7 @@ class AudioTextDataType:
     key: str | None = None  # Can be either a single field (labels) or a selection: (labels;label)
     name: str | None = None  # Just a filler to name the data
     prob: float | None = None
-    repo_id: str | None = None # Repo id in case of a hf repo
+    repo_id: str | None = None  # Repo id in case of a hf repo
 
 
 InputUrlType = List[AudioTextDataType] | AudioTextDataType | List[str] | str
@@ -72,16 +71,17 @@ def parse_input_to_datatype(data_urls: InputUrlType) -> List[AudioTextDataType]:
         return data_urls
 
 
-def resolve_url(file_path:str, repo_id: str  | None = None, repo_type_url_segment: str = 'datasets') -> str:
+def resolve_url(file_path: str, repo_id: str | None = None, repo_type_url_segment: str = "datasets") -> str:
     if repo_id is None:
         return file_path
     from urllib.parse import urljoin
+
     # So hf_hub_url will malform {0..10}.tar, thus we use a custom function
     # from huggingface_hub import hf_hub_url
     hf_endpoint = os.environ.get("HF_ENDPOINT", "https://huggingface.co")
     path_to_file = f"/{repo_type_url_segment}/{repo_id}/resolve/main/{file_path}"
     base_url = urljoin(hf_endpoint, path_to_file)
-    download_url =  f"{base_url}?download=true"
+    download_url = f"{base_url}?download=true"
     return download_url
 
 
@@ -285,7 +285,7 @@ def _process_sample_stream(
     target_sample_rate: int = 16000,
     mono: bool = True,
     prompt: str | List[str] | Dict[str, Any] = "",
-    append_targets_to_input: bool = True, # During training yes, inference no
+    append_targets_to_input: bool = True,  # During training yes, inference no
     handler: Callable = warn_and_continue,
     tokenizer_eos_token: bool = False,
 ) -> Iterable[Dict[str, Any]]:
@@ -327,9 +327,9 @@ def _process_sample_stream(
                 sample_prompt = random.choice(sample_prompt)
             prompt_inputs = tokenizer(sample_prompt)
 
-            input_ids = prompt_inputs['input_ids']
-            attention_mask = prompt_inputs['attention_mask']
-            labels = [-100 for _ in prompt_inputs["input_ids"]] # Default no loss for prompt
+            input_ids = prompt_inputs["input_ids"]
+            attention_mask = prompt_inputs["attention_mask"]
+            labels = [-100 for _ in prompt_inputs["input_ids"]]  # Default no loss for prompt
 
             if tokenizer_eos_token:
                 text = text + tokenizer.eos_token
@@ -368,6 +368,24 @@ def url_to_name(url):
     filename = "_".join(p.parts[-3:])
     return filename
 
+def download_data_to_cache(
+    urls: str | List[str],
+    cache_dir: str | None = None,  # Use global CACHE_DIR
+    handler: Callable = warn_and_continue,
+    **filtering_kwargs,
+) -> wds.DataPipeline:
+    def _consume_local_paths(src):
+        for source in src:
+            # We dont need to stream the data here, just download
+            if 'stream' in source:
+                del source['stream']
+            yield source['url']
+    return wds.DataPipeline(*[
+            wds.SimpleShardList(urls),
+            wds.split_by_worker,
+            wds.cache.FileCache(cache_dir=cache_dir, url_to_name=url_to_name),
+            _consume_local_paths,
+        ])
 
 def create_audio_text_token_pipeline(
     urls: str | List[str],
@@ -421,10 +439,16 @@ def create_audio_text_token_pipeline(
         ]
     )
 
-    tokenizer_eos_token = tokenizer.eos_token if (hasattr(tokenizer, "eos_token") and training) else None # Dont need to estimate EOS token during inference
+    tokenizer_eos_token = (
+        tokenizer.eos_token if (hasattr(tokenizer, "eos_token") and training) else None
+    )  # Dont need to estimate EOS token during inference
     pipeline.append(
         partial(
-            _process_sample_stream, tokenizer=tokenizer, tokenizer_eos_token=tokenizer_eos_token, append_targets_to_input=training, **filtering_kwargs
+            _process_sample_stream,
+            tokenizer=tokenizer,
+            tokenizer_eos_token=tokenizer_eos_token,
+            append_targets_to_input=training,
+            **filtering_kwargs,
         )
     )
     # Batching
@@ -458,7 +482,7 @@ class AudioTextTokenWebdataset:
     sort_by_length: int | None = None
     shuffle: int = 256  # For Webloader during training
     dataset: wds.DataPipeline | None = None  # Saving the generated dataset
-    cache_dir: str = "" # use default cache dir
+    cache_dir: str = ""  # use default cache dir
 
     def __post_init__(self):
         if hasattr(self.tokenizer, "pad_token") and self.tokenizer.pad_token is None:
@@ -515,7 +539,8 @@ class AudioTextTokenWebdataset:
                 sort_by_length(
                     bufsize=self.sort_by_length,
                     reverse=True,
-                    sort_function=lambda item: len(item["input_ids"]) + item['audio'].shape[-1]/ 16000, # Seconds + number of text tokens
+                    sort_function=lambda item: len(item["input_ids"])
+                    + item["audio"].shape[-1] / 16000,  # Seconds + number of text tokens
                 )
             )
         collate_fn = collate_fn or self._default_collate_fn
@@ -576,7 +601,7 @@ class SequentialDatasetSampler(wds.DataPipeline, wds.compat.FluidInterface):
 
 
 # def expand_path(pattern: str | List[str]) -> List[str]:
-def expand_path(data_type : AudioTextDataType) -> List[str]:
+def expand_path(data_type: AudioTextDataType) -> List[str]:
     import braceexpand, glob
 
     pattern = data_type.data
@@ -616,7 +641,6 @@ def expand_path(data_type : AudioTextDataType) -> List[str]:
 
 if __name__ == "__main__":
     from tqdm import tqdm
-
     tokenizer = AutoTokenizer.from_pretrained("gpt2")
     ds = AudioTextTokenWebdataset(
         tokenizer=tokenizer,
