@@ -1,0 +1,107 @@
+max_steps: 100000
+train_data:
+    ESC-50:
+        prompt: Classify the environmental sound.
+        data:
+            - ESC-50/train/esc50_fold_{1..4}_0000000.tar.gz
+        key: label;labels
+        prob: 0.5
+        repo_id: mispeech/xares_llm_data
+    SpeechCommandsV1:
+        prompt: Classify the keyword.
+        data:
+            - SpeechCommandsV1/train/train_renamed_with_text_0000{00..51}.tar.gz
+        key: text;caption;captions;label;labels
+        prob: 1
+        repo_id: mispeech/xares_llm_data
+    FluentSpeechCommands:
+        prompt: Identify the command, action, and object from the speech.
+        data:
+            - FluentSpeechCommands/train/train_intent_with_text_0000{00..23}.tar.gz
+        key: text;caption;captions;label;labels
+        prob: 2
+        repo_id: mispeech/xares_llm_data
+    FSDKaggle2018:
+        prompt: Multi-label classification for FSDKaggle2018
+        data:
+            - FSDKaggle2018/train/train_with_text_0000{00..20}.tar.gz
+        key: label;labels
+        prob: 2
+        repo_id: mispeech/xares_llm_data
+    VoxCeleb1:
+        prompt: Are the two speakers the same or different?
+        data:
+            - VoxCeleb1/train/train_0000{00..39}.tar.gz
+        key: label;labels
+        prob: 2
+        repo_id: mispeech/xares_llm_data
+    NSynth:
+        prompt: Classify the music instrument.
+        data:
+            - NSynth/train/train_000{000..371}.tar.gz
+        key: instrument_family_str
+        prob: 3
+        repo_id: mispeech/xares_llm_data
+    CremaD:
+        prompt: Identify the emotion expressed in the speech.
+        data:
+            - CremaD/train/train_cremad_with_text_0000{00..05}.tar.gz
+        key: label
+        prob: 1
+        repo_id: mispeech/xares_llm_data
+    ASVSpoof2015:
+        prompt: Detect if the audio is genuine or a spoof.
+        data:
+            - ASVSpoof2015/train/asvspoof_train_0000{00..17}.tar.gz
+        key: binary_spoof
+        prob: 1
+        repo_id: mispeech/xares_llm_data
+    FreeMusicArchive:
+        prompt: Classify the music genre (FMA).
+        data:
+            - FreeMusicArchive/train/small_train_0000{00..63}.tar.gz
+        key: genre
+        prob: 2
+        repo_id: mispeech/xares_llm_data
+    FSD50k:
+        prompt: Multi-label classification for FSD50k
+        data:
+            - FSD50k/train/train_with_text_0000{00..08}.tar.gz
+        key: label;labels
+        prob: 3
+        repo_id: mispeech/xares_llm_data
+    Urbansound8k:
+        prompt: Classify the urban sound.
+        data:
+            - Urbansound8k/train/urbansound_fold{1..9}_0000000.tar.gz
+        key: soundevent
+        prob: 1
+        repo_id: mispeech/xares_llm_data
+    GTZAN:
+        prompt: Classify the music genre (GTZAN).
+        data:
+            - GTZAN/train/gtzan_fold_{0..8}_0000000.tar.gz
+        key: genre
+        prob: 1
+        repo_id: mispeech/xares_llm_data
+    VocalSound:
+        prompt: Classify the vocal sound.
+        data:
+            - VocalSound/train/train_with_text_0000{00..20}.tar.gz
+        key: text;caption;captions;label;labels
+        prob: 2
+        repo_id: mispeech/xares_llm_data
+    LibriCount:
+        prompt: Count the amount of speakers.
+        data:
+            - LibriCount/train/libricount_fold{00..03}.tar.gz
+        key: num_speakers
+        prob: 1
+        repo_id: mispeech/xares_llm_data
+    VoxLingua33:
+        prompt: Classify the language.
+        data:
+            - VoxLingua33/train/train_subset_k_000{000..209}.tar.gz
+        key: label;labels
+        prob: 3
+        repo_id: mispeech/xares_llm_data

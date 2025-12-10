@@ -31,7 +31,7 @@ import torchaudio
 from torch import Tensor
 from dataclasses import dataclass
 from pathlib import Path
-from transformers import AutoTokenizer, PreTrainedTokenizer
+from transformers import PreTrainedTokenizer
 
 
 def set_cache() -> str:
@@ -403,8 +403,13 @@ def _process_sample_stream(
 
 def url_to_name(url):
     parsed = urlparse(url)
-    p = Path(parsed.path)
-    filename = "/".join(p.parts[-3:])
+    pattern = r"resolve/main/(.*)"
+    match = re.search(pattern, parsed.path)
+    if match:
+        filename = match.group(1)
+    else:
+        p = Path(parsed.path)
+        filename = "/".join(p.parts[-3:])
     return filename
 
 def download_data_to_cache(

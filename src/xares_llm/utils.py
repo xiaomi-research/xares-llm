@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from loguru import logger
+import sys
 import torch
 from importlib import import_module
 import random
@@ -69,19 +70,23 @@ def seed_everything(seed: int = 42, deterministic: bool = True) -> int:
 
 
 def setup_global_logger():
-    import sys
-
-    # Make the logger with this format the default for all loggers in this package
-    logger.configure(
-        handlers=[
-            {
-                "sink": sys.stdout,
-                "format": "<fg #FFA903>(X-ARES-LLM)</fg #FFA903> [<yellow>{time:YYYY-MM-DD HH:mm:ss}</yellow>] "
-                "<level>{message}</level>",
-                "level": "DEBUG",
-                "colorize": True,
-            }
-        ]
-    )
-    logger.level("ERROR", color="<red>")
-    logger.level("INFO", color="<white>")
+    from webdataset.utils import pytorch_worker_info
+    rank, world_size, *_ = pytorch_worker_info()
+    logger.remove(0)
+    if rank == 0:
+        # Make the logger with this format the default for all loggers in this package
+        logger.configure(
+            handlers=[
+                {
+                    "sink": sys.stdout,
+                    "format": "<fg #FFA903>(X-ARES-LLM)</fg #FFA903> [<yellow>{time:YYYY-MM-DD HH:mm:ss}</yellow>] "
+                    "<level>{message}</level>",
+                    "level": "DEBUG",
+                    "colorize": True,
+                }
+            ]
+        )
+        logger.level("ERROR", color="<red>")
+        logger.level("INFO", color="<white>")
+    else:
+        logger.disable(__name__)

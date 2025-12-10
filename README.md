@@ -109,7 +109,8 @@ eval_custom:
 
 ### Modify dataset
 
-By default all data is downloaded and stored in `xares_data` from the current directory.
+By default all data is downloaded and stored in `./xares_data` from the current directory.
+During training the data is directly fetched and cached in this directory.
 One can modify the data path with the environment variable `XARES_DATA_HOME`.
 
 
@@ -119,11 +120,12 @@ One can modify the data path with the environment variable `XARES_DATA_HOME`.
 The data is stored in `$XARES_DATA_HOME`, which defaults to `$PWD/xares_data`.
 
 
-### Huggingface Cmdline tool
+### Huggingface Cmdline tool (Recommended)
 
 
 ```bash
 hf download mispeech/xares_llm_data --local-dir xares_data --repo-type dataset
+hf download mispeech/MECAT-Caption --local-dir xares_data --repo-type dataset
 ```
 
 

@@ -51,5 +51,5 @@ class XaresLLMTrainerEvaluator(Trainer):
         labels = inputs.get("labels")
         if labels is not None:
             labels = labels.to(generated_ids.device)
-            logger.debug(f"Predicted {generated_ids.shape}[{generated_ids.device}], Labels: {labels.shape}[{labels.device}]")
+            logger.debug(f"Predicted {generated_ids.shape}, Labels: {labels.shape}")
         return (None, generated_ids, labels)
