@@ -49,5 +49,7 @@ class XaresLLMTrainerEvaluator(Trainer):
     def prediction_step(self, model, inputs, prediction_loss_only, ignore_keys=None):
         generated_ids = model.generate(**inputs, repetition_penalty=1.05, max_new_tokens=150)
         labels = inputs.get("labels")
-        logger.debug(f"Predicted {generated_ids.shape}, Labels: {labels.shape}")
+        if labels is not None:
+            labels = labels.to(generated_ids.device)
+            logger.debug(f"Predicted {generated_ids.shape}[{generated_ids.device}], Labels: {labels.shape}[{labels.device}]")
         return (None, generated_ids, labels)
