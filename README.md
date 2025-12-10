@@ -116,7 +116,18 @@ One can modify the data path with the environment variable `XARES_DATA_HOME`.
 
 ## Manual Downloading the data
 
-The data is stored in `$XARES_DATA_HOME`, which defaults to `$pwd/xares_data`.
+The data is stored in `$XARES_DATA_HOME`, which defaults to `$PWD/xares_data`.
+
+
+### Huggingface Cmdline tool
+
+
+```bash
+hf download mispeech/xares_llm_data --local-dir xares_data --repo-type dataset
+```
+
+
+### Provided script
 
 ```python
 python3 -m xares_llm.download_data --data all
@@ -128,3 +139,4 @@ The download location can also be changed:
 ```python
 # python3 -m xares_llm.download_data --data task1 --cache_dir /tmp/mycache
 ```
+

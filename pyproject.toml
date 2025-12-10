@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xares-llm"
-version = "0.0.6"
+version = "0.0.7"
 description = "eXtensive Audio Representation and Evaluation Suite - Large Language Model"
 dependencies = [
   "loguru",

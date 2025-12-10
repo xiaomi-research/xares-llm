@@ -150,9 +150,8 @@ class mAP:
 
 @MetricRegistry.register
 class FENSE:
-    def __init__(self, tokenizer, num_classes: int, separator: str = ";", **kwargs):
+    def __init__(self, tokenizer, **kwargs):
         self.tokendecoder = TokenDecoder(tokenizer)
-        self.num_classes = num_classes
         self.separator = separator
         super().__init__(**kwargs)
 

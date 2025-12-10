@@ -46,6 +46,45 @@ def set_cache() -> str:
 
 CACHE_DIR = set_cache()
 
+# This class overwrites the default wds.cache and allows for directories as cache paths
+class FileCache(wds.cache.FileCache):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def get_file(self, url: str) -> str:
+        """Download a file from a given URL and return the path to the downloaded file.
+
+        Args:
+            url (str): The URL of the file to download.
+
+        Returns:
+            str: The path to the downloaded file.
+
+        Raises:
+            ValueError: If the downloaded file fails validation.
+        """
+        assert isinstance(url, str)
+        if wds.cache.islocal(url):
+            return urlparse(url).path
+        cache_name = self.url_to_name(url)
+        destdir = os.path.join(self.cache_dir, os.path.dirname(cache_name))
+        os.makedirs(destdir, exist_ok=True)
+        dest = os.path.join(self.cache_dir, cache_name)
+        if not os.path.exists(dest):
+            if self.verbose:
+                print("# downloading %s to %s" % (url, dest), file=sys.stderr)
+            if self.cleaner is not None:
+                self.cleaner.cleanup()
+            wds.cache.download(url, dest, verbose=self.verbose)
+            if self.validator and not self.validator(dest):
+                ftype = wds.cache.get_filetype(dest)
+                with open(dest, "rb") as f:
+                    data = f.read(200)
+                os.remove(dest)
+                raise ValueError("%s (%s) is not a tar archive, but a %s, contains %s" % (dest, url, ftype, repr(data)))
+        return dest
+
 
 @dataclass
 class AudioTextDataType:
@@ -365,7 +404,7 @@ def _process_sample_stream(
 def url_to_name(url):
     parsed = urlparse(url)
     p = Path(parsed.path)
-    filename = "_".join(p.parts[-3:])
+    filename = "/".join(p.parts[-3:])
     return filename
 
 def download_data_to_cache(
@@ -383,7 +422,7 @@ def download_data_to_cache(
     return wds.DataPipeline(*[
             wds.SimpleShardList(urls),
             wds.split_by_worker,
-            wds.cache.FileCache(cache_dir=cache_dir, url_to_name=url_to_name),
+            FileCache(cache_dir=cache_dir, url_to_name=url_to_name),
             _consume_local_paths,
         ])
 
@@ -410,7 +449,7 @@ def create_audio_text_token_pipeline(
                 wds.detshuffle(),
                 wds.split_by_node,
                 wds.split_by_worker,
-                wds.cache.FileCache(cache_dir=cache_dir, url_to_name=url_to_name),
+                FileCache(cache_dir=cache_dir, url_to_name=url_to_name),
                 pipelinefilter(tar_file_expander)(handler=handler),
                 pipelinefilter(group_by_keys)(handler=handler),
             ]
@@ -420,7 +459,7 @@ def create_audio_text_token_pipeline(
         pipeline.extend(
             [
                 wds.split_by_worker,
-                wds.cache.FileCache(cache_dir=cache_dir, url_to_name=url_to_name),
+                FileCache(cache_dir=cache_dir, url_to_name=url_to_name),
                 pipelinefilter(tar_file_expander)(handler=handler),
                 pipelinefilter(group_by_keys)(handler=handler),
                 wds.split_by_node,
@@ -637,20 +676,3 @@ def expand_path(data_type: AudioTextDataType) -> List[str]:
                     else:
                         all_final_matches.extend(matches)
     return sorted(list(set(all_final_matches)))
-
-
-if __name__ == "__main__":
-    from tqdm import tqdm
-    tokenizer = AutoTokenizer.from_pretrained("gpt2")
-    ds = AudioTextTokenWebdataset(
-        tokenizer=tokenizer,
-        data_urls=[
-            "https://hf-mirror.com/datasets/mispeech/MECAT-Caption/resolve/main/SM0/train_0000-0000000.tar.gz?download=true",
-            # 'env/AISHELL-1/train/SLR33_Aishell1_179h_0000*.tar.gz'
-        ],
-        batch_size=128,
-        num_workers=0,
-    ).create_dataloader()
-    for _ in tqdm(ds):
-        print(_["audio"].shape)
-        pass
