@@ -1,0 +1,46 @@
+max_steps: 100000
+train_data:
+    AISHELL-1:
+        prompt: Transcribe the Chinese speech into text.
+        data:
+            - AISHELL-1/train/train_000{000..173}.tar.gz
+        key: text
+        repo_id: mispeech/xares_llm_data
+        prob: 2
+    Songdescriber:
+        prompt: Generate a caption for the music
+        data:
+            - Songdescriber/train/train_song_describer_0000{00..01}.tar.gz
+        key: caption
+        prob: 1
+        repo_id: mispeech/xares_llm_data
+    Clotho:
+        prompt: Generate a short caption for the audio.
+        data:
+            - Clotho/train/train_0000{00..17}.tar.gz
+        key: text;caption;captions;label;labels
+        prob: 1
+        repo_id: mispeech/xares_llm_data
+    LibriSpeech:
+        prompt: Transcribe the English speech into text
+        data:
+            - LibriSpeech/train/train-clean-100-0000{00..19}.tar.gz
+        key: trans
+        prob: 2
+        repo_id: mispeech/xares_llm_data
+    MECAT:
+        prompt: Write a general audiocaption.
+        data:
+            - 0M0/train_0000-0000000.tar.gz
+            - 000/train_0000-0000000.tar.gz
+            - SMA/train_0000-0000000.tar.gz
+            - S00/train_0000-0000000.tar.gz
+            - S00/train_0001-0000000.tar.gz
+            - 0MA/train_0000-0000000.tar.gz
+            - S0A/train_0000-0000000.tar.gz
+            - SM0/train_0000-0000000.tar.gz
+            - SM0/train_0001-0000000.tar.gz
+            - 00A/train_0000-0000000.tar.gz
+        key: short
+        repo_id: mispeech/MECAT-Caption
+        prob: 3

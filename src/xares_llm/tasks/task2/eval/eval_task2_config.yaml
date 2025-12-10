@@ -1,0 +1,59 @@
+eval_aishell-1:
+  data:
+    prompt: Transcribe the Chinese speech into text.
+    data:
+    - AISHELL-1/test/test_000{000..011}.tar.gz
+    key: text
+    repo_id: mispeech/xares_llm_data
+  batch_size: 4
+  num_workers: 2
+  metric: iCER
+eval_clotho:
+  data:
+    data:
+    - Clotho/test/test_00000{00..04}.tar.gz
+    key: caption;captions
+    prompt: Generate a short caption for the audio.
+    repo_id: mispeech/xares_llm_data
+  batch_size: 8
+  num_workers: 2
+  metric: FENSE
+eval_librispeech:
+  data:
+    data:
+    - LibriSpeech/test/test-clean-0000{00..19}.tar.gz
+    key: trans
+    prompt: Transcribe the English speech into text
+    repo_id: mispeech/xares_llm_data
+  batch_size: 4
+  num_workers: 4
+  metric: iWER
+eval_mecat:
+  data:
+    data:
+    - MECAT-Caption/0M0/test_0000-0000000.tar.gz
+    - MECAT-Caption/000/test_0000-0000000.tar.gz
+    - MECAT-Caption/SMA/test_0000-0000000.tar.gz
+    - MECAT-Caption/S00/test_0000-0000000.tar.gz
+    - MECAT-Caption/S00/test_0001-0000000.tar.gz
+    - MECAT-Caption/0MA/test_0000-0000000.tar.gz
+    - MECAT-Caption/S0A/test_0000-0000000.tar.gz
+    - MECAT-Caption/SM0/test_0000-0000000.tar.gz
+    - MECAT-Caption/SM0/test_0001-0000000.tar.gz
+    - MECAT-Caption/00A/test_0000-0000000.tar.gz
+    key: short
+    prompt: Write a general audiocaption.
+    repo_id: mispeech/xares_llm_data
+  batch_size: 4
+  num_workers: 4
+  metric: FENSE
+eval_songdescriber:
+  data:
+    data:
+    - Songdescriber/test/valid_song_describer_0000{00..01}.tar.gz
+    key: captions
+    prompt: Generate a caption for the music
+    repo_id: mispeech/xares_llm_data
+  batch_size: 16
+  num_workers: 0
+  metric: FENSE

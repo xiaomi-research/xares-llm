@@ -1,0 +1,164 @@
+eval_asvspoof2015:
+  data:
+    data:
+    - ASVSpoof2015/test/asvspoof_eval_000{00..193}.tar.gz
+    key: binary_spoof
+    prompt: Detect if the audio is genuine or a spoof.
+    repo_id: mispeech/xares_llm_data
+  batch_size: 128
+  num_workers: 2
+  metric: Accuracy
+eval_cremad:
+  data:
+    data:
+    - CremaD/test/valid_cremad_with_text_0000{00..01}.tar.gz
+    key: label;labels
+    prompt: Identify the emotion expressed in the speech.
+    repo_id: mispeech/xares_llm_data
+  batch_size: 4
+  num_workers: 0
+  metric: Accuracy
+eval_esc-50:
+  data:
+    data:
+    - ESC-50/test/esc50_fold_5_0000000.tar.gz
+    key: text;caption;captions;label;labels
+    prompt: Classify the environmental sound.
+    repo_id: mispeech/xares_llm_data
+  batch_size: 4
+  num_workers: 0
+  metric: Accuracy
+eval_fluentspeechcommands:
+  data:
+    data:
+    - FluentSpeechCommands/test/test_intent_with_text_00000{00..03}.tar.gz
+    key: text;caption;captions;label;labels
+    prompt: Identify the command, action, and object from the speech.
+    repo_id: mispeech/xares_llm_data
+  batch_size: 4
+  num_workers: 2
+  metric: Accuracy
+eval_freemusicarchive:
+  data:
+    data:
+    - FreeMusicArchive/test/fma_small_test_00000{00..07}.tar.gz
+    key: text;caption;captions;label;labels
+    prompt: Classify the music genre (FMA).
+    repo_id: mispeech/xares_llm_data
+  batch_size: 4
+  num_workers: 2
+  metric: Accuracy
+eval_fsd50k:
+  data:
+    data:
+    - FSD50k/test/eval_with_text_0000{00..31}.tar.gz
+    key: label;labels
+    prompt: Multi-label classification for FSD50k
+    repo_id: mispeech/xares_llm_data
+  batch_size: 4
+  num_workers: 2
+  metric: mAP
+  metric_args:
+    num_classes: 41
+eval_fsdkaggle2018:
+  data:
+    data:
+    - FSDKaggle2018/test/test_with_text_0000{00..02}.tar.gz
+    key: label;labels
+    prompt: Multi-label classification for FSDKaggle2018
+    repo_id: mispeech/xares_llm_data
+  batch_size: 4
+  num_workers: 2
+  metric: mAP
+  metric_args:
+    num_classes: 41
+eval_gtzan:
+  data:
+    data:
+    - GTZAN/test/gtzan_fold_9_0000000.tar.gz
+    key: genre
+    prompt: Classify the music genre (GTZAN).
+    repo_id: mispeech/xares_llm_data
+  batch_size: 8
+  num_workers: 2
+  metric: Accuracy
+eval_libricount:
+  data:
+    data:
+    - LibriCount/test/libricount_fold04.tar.gz
+    key: num_speakers
+    prompt: Count the amount of speakers.
+    repo_id: mispeech/xares_llm_data
+  batch_size: 128
+  num_workers: 0
+  metric: Accuracy
+eval_nsynth:
+  data:
+    data:
+    - NSynth/test/test_0000000.tar.gz
+    key: text;caption;captions;label;labels
+    prompt: Classify the music instrument.
+    repo_id: mispeech/xares_llm_data
+  batch_size: 8
+  num_workers: 0
+  metric: Accuracy
+eval_songdescriber:
+  data:
+    data:
+    - Songdescriber/test/valid_song_describer_0000{00..01}.tar.gz
+    key: captions
+    prompt: Generate a caption for the music
+    repo_id: mispeech/xares_llm_data
+  batch_size: 16
+  num_workers: 0
+  metric: FENSE
+eval_speechcommandsv1:
+  data:
+    data:
+    - SpeechCommandsV1/test/test_renamed_with_text_00000{00..06}.tar.gz
+    key: text;caption;captions;label;labels
+    prompt: Classify the keyword.
+    repo_id: mispeech/xares_llm_data
+  batch_size: 128
+  num_workers: 2
+  metric: Accuracy
+eval_urbansound8k:
+  data:
+    data:
+    - Urbansound8k/test/urbansound_fold10_0000000.tar.gz
+    key: soundvent
+    prompt: Classify the urban sound.
+    repo_id: mispeech/xares_llm_data
+  batch_size: 128
+  num_workers: 0
+  metric: Accuracy
+eval_vocalsound:
+  data:
+    data:
+    - VocalSound/test/test_0000{00..04}.tar.gz
+    key: labels
+    prompt: Classify the vocal sound.
+    repo_id: mispeech/xares_llm_data
+  batch_size: 32
+  num_workers: 2
+  metric: Accuracy
+eval_voxceleb1:
+  data:
+    data:
+    - VoxCeleb1/test/test_0000{00..18}.tar.gz
+    key: text;caption;captions;label;labels
+    prompt: Are the two speakers the same or different?
+    repo_id: mispeech/xares_llm_data
+  batch_size: 32
+  num_workers: 2
+  metric: Accuracy
+eval_voxlingua33:
+  data:
+    data:
+    - VoxLingua33/test/dev_00000{00..05}.tar.gz
+    key: text;caption;captions;label;labels
+    prompt: Classify the language.
+    repo_id: mispeech/xares_llm_data
+  batch_size: 64
+  num_workers: 2
+  metric: Accuracy
