@@ -1,7 +1,7 @@
 eval_freemusicarchive:
   data:
     data:
-    - FreeMusicArchive/test/fma_small_test_00000{00..07}.tar.gz
+    - FreeMusicArchive/test/fma_small_test_0000{00..07}.tar.gz
     key: text;caption;captions;label;labels
     prompt: Classify the music genre (FMA).
     repo_id: mispeech/xares_llm_data

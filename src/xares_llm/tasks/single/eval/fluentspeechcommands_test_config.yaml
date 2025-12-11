@@ -1,7 +1,7 @@
 eval_fluentspeechcommands:
   data:
     data:
-    - FluentSpeechCommands/test/test_intent_with_text_00000{00..03}.tar.gz
+    - FluentSpeechCommands/test/test_intent_with_text_0000{00..03}.tar.gz
     key: text;caption;captions;label;labels
     prompt: Identify the command, action, and object from the speech.
     repo_id: mispeech/xares_llm_data

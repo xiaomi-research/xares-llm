@@ -147,7 +147,7 @@ By default the code uses `fp32` precision, which is slow but can be reproduced. 
 
 
 If one wants to speed up training use:
+
 ```bash
 accelerate launch --mixed-precision='bf16' -m xares_llm.run task1
-
 ```
