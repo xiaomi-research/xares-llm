@@ -96,7 +96,7 @@ eval_nsynth:
   data:
     data:
     - NSynth/test/test_0000{00..05}.tar.gz
-    key: text;caption;captions;label;labels
+    key: instrument_family_str
     prompt: Classify the music instrument.
     repo_id: mispeech/xares_llm_data
   batch_size: 8
