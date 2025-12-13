@@ -155,7 +155,7 @@ eval_voxceleb1:
 eval_voxlingua33:
   data:
     data:
-    - VoxLingua33/test/dev_00000{00..05}.tar.gz
+    - VoxLingua33/test/dev_0000{00..05}.tar.gz
     key: text;caption;captions;label;labels
     prompt: Classify the language.
     repo_id: mispeech/xares_llm_data

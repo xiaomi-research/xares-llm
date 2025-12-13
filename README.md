@@ -41,6 +41,9 @@ python3 -m xares_llm.run example/dummy/dummyencoder.py task2 task2
 ```
 
 
+For reprodution purposes **Please run the script on one GPU!**.
+
+
 ### Encoder example
 
 
