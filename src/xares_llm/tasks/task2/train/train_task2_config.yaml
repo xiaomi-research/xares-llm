@@ -41,6 +41,6 @@ train_data:
             - SM0/train_0000-0000000.tar.gz
             - SM0/train_0001-0000000.tar.gz
             - 00A/train_0000-0000000.tar.gz
-        key: short
+        key: long
         repo_id: mispeech/MECAT-Caption
         prob: 3

@@ -31,18 +31,20 @@ eval_librispeech:
 eval_mecat:
   data:
     data:
-    - 000/test_0000-0000000.tar.gz
     - 0M0/test_0000-0000000.tar.gz
+    - 000/test_0000-0000000.tar.gz
     - SMA/test_0000-0000000.tar.gz
     - S00/test_0000-0000000.tar.gz
+    - S00/test_0001-0000000.tar.gz
     - 0MA/test_0000-0000000.tar.gz
     - S0A/test_0000-0000000.tar.gz
     - SM0/test_0000-0000000.tar.gz
+    - SM0/test_0001-0000000.tar.gz
     - 00A/test_0000-0000000.tar.gz
     key: long
     prompt: Write a general audiocaption.
     repo_id: mispeech/MECAT-Caption
-  batch_size: 4
+  batch_size: 64
   num_workers: 4
   metric: DATE
 eval_songdescriber:
