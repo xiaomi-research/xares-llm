@@ -94,9 +94,12 @@ class DummyEncoder(torch.nn.Module):
 
 | Task | Dasheng-Base Score | Whisper-Base Score | 
 | :--- | :---: | :---: |
-| `eval_aishell-1` | 0.00 |  0.937 |
+| `eval_aishell-1` | 0.18 |  0.309 |
 | `eval_clotho` | 0.20 | 0.33 |
-| `eval_librispeech` | 0.00 | 0.32 | 
+| `eval_librispeech` | 0.10 | 0.341 | 
+| `eval_mecat` | 0.60 | 0.596  | 
+| `eval_songdescriber` | 0.41 | 0.43 |
+| Overall | 0.27 | 0.40 |
 
 
 ### Single dataset training
@@ -181,12 +184,12 @@ The download location can also be changed:
 ```
 
 
-## Note on Precision
+## Note on Precision and reprodution
 
-By default the code uses `fp32` precision, which is slow but can be reproduced. Using any other precision will lead to different results.
+By default the code uses `fp32` precision, which is slow but can be reproduced. Note that results might differ depending on your Graphics card. However, results on a single machine should be completely reproducible.
 
 
-If one wants to speed up training use:
+If one wants to speed up training (and no reproduction) use:
 
 ```bash
 accelerate launch --mixed-precision='bf16' -m xares_llm.run task1
