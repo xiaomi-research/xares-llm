@@ -21,7 +21,7 @@ dependencies = [
   "torchcodec>=0.8.0",
   "accelerate>=1.10.1",
   "peft>=0.18.0",
-  "mecat>=1.0.8",
+  "mecat>=1.1.0",
 ]
 authors = [
   {name = "Heinrich Dinkel", email = "dinkelheinrich@xiaomi.com"},

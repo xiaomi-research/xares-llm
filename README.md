@@ -94,11 +94,11 @@ class DummyEncoder(torch.nn.Module):
 
 | Task | Dasheng-Base Score | Whisper-Base Score | 
 | :--- | :---: | :---: |
-| `eval_aishell-1` | 0.18 |  0.309 |
-| `eval_clotho` | 0.20 | 0.33 |
-| `eval_librispeech` | 0.10 | 0.341 | 
-| `eval_mecat` | 0.60 | 0.596  | 
-| `eval_songdescriber` | 0.41 | 0.43 |
+| `eval_aishell-1` | 0.018 |  0.361 |
+| `eval_clotho` | 0.207 | 0.358 |
+| `eval_librispeech` | 0.103 | 0.385 | 
+| `eval_mecat` | 0.60 | 0.624  | 
+| `eval_songdescriber` | 0.41 | 0.448 |
 | Overall | 0.27 | 0.40 |
 
 
