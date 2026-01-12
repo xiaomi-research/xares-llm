@@ -9,7 +9,7 @@ The system automatically downloads training data, trains the LALM then tests var
 
 ```bash
 uv venv 
-uv pip install $THIS_REPO
+uv pip install git+https://github.com/xiaomi-research/xares-llm
 ```
 
 ## Usage
