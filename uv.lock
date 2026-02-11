@@ -761,7 +761,7 @@ wheels = [
 
 [[package]]
 name = "mecat"
-version = "1.0.4"
+version = "1.1.0"
 source = { registry = "https://mirrors.sustech.edu.cn/pypi/web/simple" }
 dependencies = [
     { name = "datasets" },
@@ -769,6 +769,7 @@ dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://mirrors.sustech.edu.cn/pypi/web/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.3.5", source = { registry = "https://mirrors.sustech.edu.cn/pypi/web/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pandas" },
+    { name = "psutil" },
     { name = "requests" },
     { name = "sentence-transformers" },
     { name = "tabulate" },
@@ -776,9 +777,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "transformers" },
 ]
-sdist = { url = "https://mirrors.sustech.edu.cn/pypi/web/packages/33/a0/d215294ee5830902d34941d9ed3fab8c89aa134509ab92eb23c28b0cc1cb/mecat-1.0.4.tar.gz", hash = "sha256:1969b6382a2e1a447bb4ca14732a84a7952883163b8b6878534efc49c234c8c9" }
+sdist = { url = "https://mirrors.sustech.edu.cn/pypi/web/packages/48/c1/8f3cd6ea1ff8e4dfea97d8b1f9d72fb54c008dba3854de53147c9c3aee16/mecat-1.1.0.tar.gz", hash = "sha256:3d1b2e33085a31ace907660207cfda20c198e58c1411ffe42c0bfeb6abb7a6ee" }
 wheels = [
-    { url = "https://mirrors.sustech.edu.cn/pypi/web/packages/cf/6f/df6d267398c5fcb9a75f8ba5e6ab13d0988c0c9853346c0372d92c73b2a9/mecat-1.0.4-py3-none-any.whl", hash = "sha256:1ff433f5a91e1584284f21ec1ec0e5e232cdfe014cb6b71e4321d6f55c5bf7eb" },
+    { url = "https://mirrors.sustech.edu.cn/pypi/web/packages/38/18/273cdb005d09819145ae3e07b0e510b318338b0dcc2ed8d103760104a0e6/mecat-1.1.0-py3-none-any.whl", hash = "sha256:678d0925b73d5cf35f98846f21cfad48345fb69e52f48fa2e8363d643dea433a" },
 ]
 
 [[package]]
@@ -2482,7 +2483,7 @@ wheels = [
 
 [[package]]
 name = "xares-llm"
-version = "0.0.7"
+version = "0.0.11"
 source = { editable = "." }
 dependencies = [
     { name = "accelerate" },
@@ -2508,7 +2509,7 @@ requires-dist = [
     { name = "accelerate", specifier = ">=1.10.1" },
     { name = "jiwer" },
     { name = "loguru" },
-    { name = "mecat", specifier = ">=1.0.4" },
+    { name = "mecat", specifier = ">=1.1.0" },
     { name = "numpy" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "peft", specifier = ">=0.18.0" },
