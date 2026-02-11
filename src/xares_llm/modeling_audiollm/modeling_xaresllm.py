@@ -50,7 +50,7 @@ class XaresLLMModel(PreTrainedModel, nn.Module):
         for param in self.audio_encoder.parameters():
             param._requires_grad = False
 
-        decoder = AutoModelForCausalLM.from_pretrained(config.decoder_type)
+        decoder = AutoModelForCausalLM.from_pretrained(config.decoder_type, dtype=torch.float32)
         peft_config = LoraConfig(
             target_modules="all-linear",
             task_type=TaskType.CAUSAL_LM,
