@@ -194,3 +194,18 @@ If one wants to speed up training (and no reproduction) use:
 ```bash
 accelerate launch --mixed-precision='bf16' -m xares_llm.run task1
 ```
+
+
+# Citation
+
+```
+@misc{dinkel2026interspeech2026audioencoder,
+      title={The Interspeech 2026 Audio Encoder Capability Challenge for Large Audio Language Models}, 
+      author={Heinrich Dinkel and Jiahao Zhou and Guanbo Wang and Yadong Niu and Junbo Zhang and Yufeng Hao and Ying Liu and Ke Li and Wenwu Wang and Zhiyong Wu and Jian Luan},
+      year={2026},
+      eprint={2603.22728},
+      archivePrefix={arXiv},
+      primaryClass={cs.SD},
+      url={https://arxiv.org/abs/2603.22728}, 
+}
+```
